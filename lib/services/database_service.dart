@@ -1,11 +1,12 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/ssh_connection.dart';
+import 'encryption_service.dart';
 
 /// 数据库服务类
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'ssh_client.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   /// 获取数据库实例
   Future<Database> get database async {
@@ -20,6 +21,7 @@ class DatabaseService {
       path,
       version: _databaseVersion,
       onCreate: _createDatabase,
+      onUpgrade: _upgradeDatabase,
     );
   }
 
@@ -36,17 +38,29 @@ class DatabaseService {
         private_key TEXT,
         description TEXT,
         created_at INTEGER NOT NULL,
-        last_used_at INTEGER NOT NULL
+        last_used_at INTEGER NOT NULL,
+        encrypted INTEGER DEFAULT 0
       )
     ''');
+  }
+
+  /// 升级数据库
+  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // 添加加密标记列
+      await db.execute('ALTER TABLE ssh_connections ADD COLUMN encrypted INTEGER DEFAULT 0');
+    }
   }
 
   /// 插入新的 SSH 连接配置
   Future<void> insertConnection(SshConnection connection) async {
     final db = await database;
+    final connectionMap = connection.toMap();
+    final encryptedMap = await EncryptionService.encryptConnectionData(connectionMap);
+    
     await db.insert(
       'ssh_connections',
-      connection.toMap(),
+      encryptedMap,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -59,9 +73,12 @@ class DatabaseService {
       orderBy: 'last_used_at DESC',
     );
 
-    return List.generate(maps.length, (i) {
-      return SshConnection.fromMap(maps[i]);
-    });
+    final List<SshConnection> connections = [];
+    for (final map in maps) {
+      final decryptedMap = await EncryptionService.decryptConnectionData(map);
+      connections.add(SshConnection.fromMap(decryptedMap));
+    }
+    return connections;
   }
 
   /// 根据 ID 获取连接配置
@@ -74,7 +91,8 @@ class DatabaseService {
     );
 
     if (maps.isNotEmpty) {
-      return SshConnection.fromMap(maps.first);
+      final decryptedMap = await EncryptionService.decryptConnectionData(maps.first);
+      return SshConnection.fromMap(decryptedMap);
     }
     return null;
   }
@@ -82,9 +100,12 @@ class DatabaseService {
   /// 更新连接配置
   Future<void> updateConnection(SshConnection connection) async {
     final db = await database;
+    final connectionMap = connection.toMap();
+    final encryptedMap = await EncryptionService.encryptConnectionData(connectionMap);
+    
     await db.update(
       'ssh_connections',
-      connection.toMap(),
+      encryptedMap,
       where: 'id = ?',
       whereArgs: [connection.id],
     );
@@ -121,9 +142,12 @@ class DatabaseService {
       orderBy: 'last_used_at DESC',
     );
 
-    return List.generate(maps.length, (i) {
-      return SshConnection.fromMap(maps[i]);
-    });
+    final List<SshConnection> connections = [];
+    for (final map in maps) {
+      final decryptedMap = await EncryptionService.decryptConnectionData(map);
+      connections.add(SshConnection.fromMap(decryptedMap));
+    }
+    return connections;
   }
 
   /// 关闭数据库

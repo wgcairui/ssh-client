@@ -40,6 +40,26 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   }
 
   @override
+  void didUpdateWidget(TerminalWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 如果连接ID发生变化，重新初始化连接
+    if (oldWidget.connectionId != widget.connectionId) {
+      _cleanupSubscriptions();
+      if (_sessionId != null) {
+        context.read<SshSessionController>().closeSession(_sessionId!);
+      }
+      _terminal?.buffer.clear();
+      setState(() {
+        _sessionId = null;
+        _connection = null;
+        _error = null;
+        _isConnecting = false;
+      });
+      _loadConnectionAndConnect();
+    }
+  }
+
+  @override
   void dispose() {
     _cleanupSubscriptions();
     super.dispose();

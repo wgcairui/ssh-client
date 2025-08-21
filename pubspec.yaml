@@ -56,6 +56,9 @@ dependencies:
   
   # 文件选择
   file_picker: ^8.1.2
+  
+  # 加密
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:
