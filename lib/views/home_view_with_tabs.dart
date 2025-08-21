@@ -251,51 +251,63 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
           if (!_isSearching) ...[ 
             Row(
               children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isLeftPanelCollapsed = true;
-                      if (_isSearching) {
-                        _isSearching = false;
-                        _searchController.clear();
-                      }
-                    });
-                  },
-                  icon: Icon(
-                    Icons.menu_open,
-                    size: 20.sp,
-                  ),
-                  tooltip: '折叠面板',
-                ),
-                Icon(
-                  Icons.terminal,
-                  size: 24.sp,
-                  color: Theme.of(context).primaryColor,
-                ),
-                SizedBox(width: 8.w),
                 Expanded(
-                  child: Text(
-                    'SSH 客户端',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLeftPanelCollapsed = true;
+                        if (_isSearching) {
+                          _isSearching = false;
+                          _searchController.clear();
+                        }
+                      });
+                    },
+                    icon: Icon(
+                      Icons.menu_open,
+                      size: 16.sp,
                     ),
-                    overflow: TextOverflow.ellipsis,
+                    iconSize: 16.sp,
+                    tooltip: '折叠面板',
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isSearching = true;
-                    });
-                  },
-                  icon: Icon(Icons.search, size: 18.sp),
-                  tooltip: '搜索连接',
+                if (MediaQuery.of(context).size.width > 200) ...[
+                  Icon(
+                    Icons.terminal,
+                    size: 16.sp,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  SizedBox(width: 2.w),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'SSH',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                Expanded(
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isSearching = true;
+                      });
+                    },
+                    icon: Icon(Icons.search, size: 16.sp),
+                    iconSize: 16.sp,
+                    tooltip: '搜索连接',
+                  ),
                 ),
-                IconButton(
-                  onPressed: _showAddConnectionDialog,
-                  icon: Icon(Icons.add, size: 18.sp),
-                  tooltip: '添加连接',
+                Expanded(
+                  child: IconButton(
+                    onPressed: _showAddConnectionDialog,
+                    icon: Icon(Icons.add, size: 16.sp),
+                    iconSize: 16.sp,
+                    tooltip: '添加连接',
+                  ),
                 ),
               ],
             ),
