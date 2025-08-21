@@ -17,6 +17,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   String? _selectedConnectionId;
   bool _isSearching = false;
+  bool _isLeftPanelCollapsed = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -63,8 +64,10 @@ class _HomeViewState extends State<HomeView> {
     return Row(
       children: [
         // 左侧连接列表面板
-        Container(
-          width: 380.w,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          width: _isLeftPanelCollapsed ? 60.w : 380.w,
           decoration: BoxDecoration(
             border: Border(
               right: BorderSide(
@@ -75,18 +78,19 @@ class _HomeViewState extends State<HomeView> {
           ),
           child: Column(
             children: [
-              _buildHeader(),
-              Expanded(
-                child: ConnectionListWidget(
-                  onConnectionSelected: (connectionId) {
-                    setState(() {
-                      _selectedConnectionId = connectionId;
-                    });
-                  },
-                  selectedConnectionId: _selectedConnectionId,
-                  searchController: _searchController,
+              _buildCollapsibleHeader(),
+              if (!_isLeftPanelCollapsed)
+                Expanded(
+                  child: ConnectionListWidget(
+                    onConnectionSelected: (connectionId) {
+                      setState(() {
+                        _selectedConnectionId = connectionId;
+                      });
+                    },
+                    selectedConnectionId: _selectedConnectionId,
+                    searchController: _searchController,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -131,7 +135,162 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// 构建顶部标题栏
+  /// 构建可折叠的顶部标题栏
+  Widget _buildCollapsibleHeader() {
+    if (_isLeftPanelCollapsed) {
+      // 折叠状态：仅显示菜单按钮和简化信息
+      return Container(
+        padding: EdgeInsets.all(8.w),
+        child: Column(
+          children: [
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  _isLeftPanelCollapsed = false;
+                });
+              },
+              icon: Icon(
+                Icons.menu,
+                size: 20.sp,
+              ),
+              tooltip: '展开面板',
+            ),
+            SizedBox(height: 8.h),
+            IconButton(
+              onPressed: _addNewConnection,
+              icon: const Icon(Icons.add),
+              tooltip: '添加连接',
+              iconSize: 18.sp,
+            ),
+            SizedBox(height: 8.h),
+            Consumer<SshController>(
+              builder: (context, controller, child) {
+                return Text(
+                  '${controller.connections.length}',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 展开状态：显示完整标题栏
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: [
+          if (!_isSearching) ...[
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLeftPanelCollapsed = true;
+                      if (_isSearching) {
+                        _isSearching = false;
+                        _searchController.clear();
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    Icons.menu_open,
+                    size: 20.sp,
+                  ),
+                  tooltip: '折叠面板',
+                ),
+                Icon(
+                  Icons.terminal,
+                  size: 24.sp,
+                  color: Theme.of(context).primaryColor,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'SSH 客户端',
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                    });
+                  },
+                  icon: const Icon(Icons.search),
+                  tooltip: '搜索连接',
+                ),
+                IconButton(
+                  onPressed: _addNewConnection,
+                  icon: const Icon(Icons.add),
+                  tooltip: '添加连接',
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLeftPanelCollapsed = true;
+                      _isSearching = false;
+                      _searchController.clear();
+                    });
+                  },
+                  icon: Icon(
+                    Icons.menu_open,
+                    size: 20.sp,
+                  ),
+                  tooltip: '折叠面板',
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: '搜索连接...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 8.h,
+                      ),
+                      isDense: true,
+                    ),
+                    onChanged: (value) {
+                      setState(() {});
+                    },
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = false;
+                      _searchController.clear();
+                    });
+                  },
+                  icon: const Icon(Icons.close),
+                  tooltip: '取消搜索',
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 构建顶部标题栏（手机布局用）
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.all(16.w),
