@@ -103,13 +103,20 @@ jobs:
           --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
           --no-tree-shake-icons
       
-    - name: Build APK (Release)
+    - name: Build APK (Release - Universal)
+      run: |
+        flutter build apk --release \
+          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+          --obfuscate \
+          --split-debug-info=build/app/outputs/symbols
+          
+    - name: Build APK (Release - Split by ABI)
       run: |
         flutter build apk --release \
           --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
           --split-per-abi \
           --obfuscate \
-          --split-debug-info=build/app/outputs/symbols
+          --split-debug-info=build/app/outputs/symbols-split
       
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -136,7 +143,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ssh-client-debug-symbols
-        path: build/app/outputs/symbols/
+        path: |
+          build/app/outputs/symbols/
+          build/app/outputs/symbols-split/
         retention-days: 90
 
   # Create development release for main branch pushes
@@ -278,13 +287,20 @@ jobs:
     - name: Run tests
       run: flutter test
       
-    - name: Build Release APKs
+    - name: Build APK (Release - Universal)
+      run: |
+        flutter build apk --release \
+          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+          --obfuscate \
+          --split-debug-info=build/app/outputs/symbols
+          
+    - name: Build APK (Release - Split by ABI)
       run: |
         flutter build apk --release \
           --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
           --split-per-abi \
           --obfuscate \
-          --split-debug-info=build/app/outputs/symbols
+          --split-debug-info=build/app/outputs/symbols-split
       
     - name: Get tag name
       id: tag
