@@ -69,7 +69,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          width: _isLeftPanelCollapsed ? 80.w : 480.w,
+          width: _isLeftPanelCollapsed ? 120.w : 720.w,
           decoration: BoxDecoration(
             border: Border(
               right: BorderSide(

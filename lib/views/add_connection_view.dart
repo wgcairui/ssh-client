@@ -105,11 +105,14 @@ class _AddConnectionViewState extends State<AddConnectionView> {
   Widget _buildResponsiveLayout() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // OPPO Pad 4 Pro 横屏模式：居中布局
+        // OPPO Pad 4 Pro 横屏模式：居中布局，使用更合适的宽度
         if (constraints.maxWidth > 600) {
           return Center(
             child: Container(
-              constraints: BoxConstraints(maxWidth: 500.w),
+              constraints: BoxConstraints(
+                maxWidth: constraints.maxWidth * 0.7, // 使用屏幕宽度的70%
+                minWidth: 800.w, // 确保最小宽度
+              ),
               child: _buildForm(),
             ),
           );

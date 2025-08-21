@@ -124,19 +124,6 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
                 color: Theme.of(context).disabledColor,
               ),
             ),
-            if (!_isSearching) ...[
-              SizedBox(height: 16.h),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/add-connection');
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('添加连接'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                ),
-              ),
-            ],
           ],
         ),
       ),
