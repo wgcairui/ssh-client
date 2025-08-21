@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import '../controllers/ssh_controller.dart';
 
 /// 添加连接页面 - 针对 OPPO Pad 4 Pro 优化
@@ -24,6 +26,8 @@ class _AddConnectionViewState extends State<AddConnectionView> {
   bool _useKeyAuth = false;
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _useKeyFile = false; // true: 文件选择, false: 文本输入
+  String? _selectedKeyFileName;
 
   @override
   void dispose() {
@@ -319,24 +323,249 @@ class _AddConnectionViewState extends State<AddConnectionView> {
 
   /// 构建私钥字段
   Widget _buildPrivateKeyField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 输入方式选择
+        Row(
+          children: [
+            Expanded(
+              child: _buildKeyInputTab('文本输入', Icons.edit_outlined, !_useKeyFile, () {
+                setState(() {
+                  _useKeyFile = false;
+                  _selectedKeyFileName = null;
+                });
+              }),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: _buildKeyInputTab('选择文件', Icons.file_open_outlined, _useKeyFile, () {
+                setState(() {
+                  _useKeyFile = true;
+                });
+              }),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        
+        // 根据选择显示不同的输入方式
+        if (_useKeyFile) ...[
+          _buildKeyFileSelector(),
+        ] else ...[
+          _buildKeyTextInput(),
+        ],
+      ],
+    );
+  }
+
+  /// 构建密钥输入方式标签
+  Widget _buildKeyInputTab(String title, IconData icon, bool isSelected, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primary.withValues(alpha: 0.1) : null,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16.sp,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建密钥文件选择器
+  Widget _buildKeyFileSelector() {
+    return Column(
+      children: [
+        InkWell(
+          onTap: _pickKeyFile,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  _selectedKeyFileName != null ? Icons.file_present : Icons.file_upload_outlined,
+                  size: 32.sp,
+                  color: _selectedKeyFileName != null 
+                      ? Theme.of(context).colorScheme.primary 
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  _selectedKeyFileName ?? '点击选择密钥文件',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: _selectedKeyFileName != null 
+                        ? Theme.of(context).colorScheme.primary 
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: _selectedKeyFileName != null ? FontWeight.w500 : FontWeight.normal,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  '支持格式：.pem, .key, .ppk, .rsa, .ed25519',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_selectedKeyFileName != null) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '已选择: $_selectedKeyFileName',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedKeyFileName = null;
+                    _privateKeyController.clear();
+                  });
+                },
+                child: const Text('清除'),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// 构建密钥文本输入
+  Widget _buildKeyTextInput() {
     return TextFormField(
       controller: _privateKeyController,
       maxLines: 8,
       decoration: InputDecoration(
         labelText: '私钥内容',
-        hintText: '粘贴 SSH 私钥内容...',
+        hintText: '粘贴 SSH 私钥内容...\n例如：\n-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----',
         alignLabelWithHint: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
       ),
       validator: (value) {
-        if (_useKeyAuth && value?.trim().isEmpty == true) {
+        if (_useKeyAuth && !_useKeyFile && value?.trim().isEmpty == true) {
           return '请输入私钥内容';
+        }
+        if (_useKeyAuth && _useKeyFile && _selectedKeyFileName == null) {
+          return '请选择私钥文件';
         }
         return null;
       },
     );
+  }
+
+  /// 选择密钥文件
+  Future<void> _pickKeyFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pem', 'key', 'ppk', 'rsa', 'ed25519', 'txt'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final fileName = result.files.single.name;
+        
+        // 读取文件内容
+        try {
+          final keyContent = await file.readAsString();
+          
+          // 验证文件内容是否像密钥文件
+          if (_isValidKeyFormat(keyContent)) {
+            setState(() {
+              _selectedKeyFileName = fileName;
+              _privateKeyController.text = keyContent;
+            });
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('成功加载密钥文件: $fileName')),
+              );
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('文件格式不正确，请选择有效的SSH密钥文件')),
+              );
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('读取文件失败: $e')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择文件失败: $e')),
+        );
+      }
+    }
+  }
+
+  /// 验证密钥格式
+  bool _isValidKeyFormat(String content) {
+    final trimmed = content.trim();
+    
+    // 检查常见的密钥格式开头
+    final validHeaders = [
+      '-----BEGIN OPENSSH PRIVATE KEY-----',
+      '-----BEGIN RSA PRIVATE KEY-----',
+      '-----BEGIN DSA PRIVATE KEY-----',
+      '-----BEGIN EC PRIVATE KEY-----',
+      '-----BEGIN PRIVATE KEY-----',
+      'PuTTY-User-Key-File-',  // PuTTY format
+    ];
+    
+    return validHeaders.any((header) => trimmed.startsWith(header)) ||
+           (trimmed.length > 50 && trimmed.contains('PRIVATE KEY'));
   }
 
   /// 构建描述字段
