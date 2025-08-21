@@ -6,6 +6,7 @@ import 'controllers/ssh_controller.dart';
 import 'controllers/ssh_session_controller.dart';
 import 'controllers/ssh_tab_controller.dart';
 import 'controllers/file_transfer_controller.dart';
+import 'controllers/update_controller.dart';
 import 'views/home_view_with_tabs.dart';
 
 void main() async {
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(create: (context) => SshSessionController()),
             ChangeNotifierProvider(create: (context) => SshTabController()),
             ChangeNotifierProvider(create: (context) => FileTransferController()),
+            ChangeNotifierProvider(create: (context) => UpdateController()),
           ],
           child: MaterialApp(
             title: 'SSH 客户端',

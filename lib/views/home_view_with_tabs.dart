@@ -7,6 +7,7 @@ import '../widgets/connection_list_widget.dart';
 import '../widgets/ssh_tab_bar.dart';
 import '../widgets/single_terminal_manager.dart';
 import 'add_connection_view.dart';
+import 'update_settings_view.dart';
 
 /// 支持多标签页的主界面
 class HomeViewWithTabs extends StatefulWidget {
@@ -309,6 +310,14 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                     tooltip: '添加连接',
                   ),
                 ),
+                Expanded(
+                  child: IconButton(
+                    onPressed: _showSettingsMenu,
+                    icon: Icon(Icons.more_vert, size: 20.sp),
+                    iconSize: 20.sp,
+                    tooltip: '设置',
+                  ),
+                ),
               ],
             ),
           ] else ...[
@@ -473,6 +482,94 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示设置菜单
+  void _showSettingsMenu() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.system_update),
+                title: const Text('自动更新设置'),
+                subtitle: const Text('检查更新和下载设置'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const UpdateSettingsView(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('关于应用'),
+                subtitle: const Text('版本信息和帮助'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _showAboutDialog();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 显示关于对话框
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.terminal,
+              color: Theme.of(context).primaryColor,
+              size: 24.sp,
+            ),
+            SizedBox(width: 8.w),
+            const Text('SSH 客户端'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '一个现代化的 SSH 客户端应用',
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              '专为平板优化，支持多标签页连接',
+              style: TextStyle(fontSize: 12.sp),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              '版本：1.0.2',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('确定'),
           ),
         ],
       ),
