@@ -609,7 +609,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
             ),
             SizedBox(height: 16.h),
             Text(
-              '版本：1.0.3',
+              '版本：1.0.8',
               style: TextStyle(
                 fontSize: 18.sp,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
