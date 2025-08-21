@@ -272,12 +272,12 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                   size: 24.sp,
                   color: Theme.of(context).primaryColor,
                 ),
-                SizedBox(width: 12.w),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     'SSH 客户端',
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -289,12 +289,12 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                       _isSearching = true;
                     });
                   },
-                  icon: const Icon(Icons.search),
+                  icon: Icon(Icons.search, size: 18.sp),
                   tooltip: '搜索连接',
                 ),
                 IconButton(
                   onPressed: _showAddConnectionDialog,
-                  icon: const Icon(Icons.add),
+                  icon: Icon(Icons.add, size: 18.sp),
                   tooltip: '添加连接',
                 ),
               ],

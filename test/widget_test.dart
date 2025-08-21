@@ -1,30 +1,69 @@
-// This is a basic Flutter widget test.
+// SSH Client widget tests.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Tests for the SSH client application functionality.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:ssh_client/main.dart';
+import 'package:ssh_client/controllers/ssh_controller.dart';
+import 'package:ssh_client/controllers/ssh_session_controller.dart';
+import 'package:ssh_client/controllers/ssh_tab_controller.dart';
+import 'package:ssh_client/controllers/file_transfer_controller.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  setUpAll(() {
+    // Initialize FFI for testing
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  group('SSH Client Controller Tests', () {
+    test('SshTabController manages tabs correctly', () {
+      final tabController = SshTabController();
+      
+      // Test initial state
+      expect(tabController.tabs.length, 0);
+      expect(tabController.activeTab, isNull);
+      expect(tabController.isMaxTabsReached, false);
+      
+      // Test max tabs limit
+      expect(SshTabController.maxTabs, 10);
+    });
+
+    test('SshSessionController manages sessions correctly', () {
+      final sessionController = SshSessionController();
+      
+      // Test initial state
+      expect(sessionController.sessions.length, 0);
+      expect(sessionController.activeSessionId, isNull);
+      expect(sessionController.hasActiveConnection, false);
+      expect(sessionController.sessionCount, 0);
+      expect(sessionController.connectedSessionCount, 0);
+      expect(sessionController.errorSessionCount, 0);
+    });
+  });
+
+  testWidgets('SSH Client app builds without crashing', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => SshController()),
+          ChangeNotifierProvider(create: (context) => SshSessionController()),
+          ChangeNotifierProvider(create: (context) => SshTabController()),
+          ChangeNotifierProvider(create: (context) => FileTransferController()),
+        ],
+        child: const MyApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Just pump once to ensure it builds
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Basic verification that the app builds
+    expect(tester.allWidgets.any((widget) => widget is MaterialApp), true);
   });
 }
