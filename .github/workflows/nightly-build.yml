@@ -1,0 +1,76 @@
+name: Nightly Build
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+        - debug
+        - release
+
+jobs:
+  nightly-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.27.1'
+        channel: 'stable'
+        cache: true
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Analyze code
+      run: flutter analyze
+      
+    - name: Run tests
+      run: flutter test
+      
+    - name: Build APK
+      run: |
+        if [ "${{ github.event.inputs.build_type }}" = "release" ]; then
+          flutter build apk --release
+          echo "BUILD_TYPE=release" >> $GITHUB_ENV
+          echo "APK_PATH=build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_ENV
+        else
+          flutter build apk --debug
+          echo "BUILD_TYPE=debug" >> $GITHUB_ENV
+          echo "APK_PATH=build/app/outputs/flutter-apk/app-debug.apk" >> $GITHUB_ENV
+        fi
+        
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      
+    - name: Upload Nightly APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ssh-client-nightly-${{ steps.date.outputs.date }}-${{ env.BUILD_TYPE }}
+        path: ${{ env.APK_PATH }}
+        retention-days: 7
+        
+    - name: Clean old artifacts
+      uses: geekyeggo/delete-artifact@v4
+      with:
+        name: ssh-client-nightly-*
+        useGlob: true
+        failOnError: false
