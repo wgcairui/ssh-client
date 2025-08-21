@@ -17,6 +17,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# 取消旧的运行中的工作流
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Global environment variables for consistency
 env:
   FLUTTER_VERSION: '3.27.1'
