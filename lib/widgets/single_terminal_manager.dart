@@ -270,7 +270,10 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
       if (state != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => FileTransferView(connection: state.connection),
+            builder: (context) => FileTransferView(
+              connection: state.connection, 
+              sessionId: state.sessionId,
+            ),
           ),
         );
       }

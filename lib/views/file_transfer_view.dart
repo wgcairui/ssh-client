@@ -4,16 +4,20 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dartssh2/dartssh2.dart';
 import '../controllers/file_transfer_controller.dart';
+import '../controllers/ssh_session_controller.dart';
 import '../models/ssh_connection.dart';
 import '../services/file_transfer_service.dart';
+import '../services/ssh_service.dart';
 
 /// 文件传输页面
 class FileTransferView extends StatefulWidget {
   final SshConnection connection;
+  final String? sessionId;
   
   const FileTransferView({
     super.key,
     required this.connection,
+    this.sessionId,
   });
 
   @override
@@ -41,8 +45,32 @@ class _FileTransferViewState extends State<FileTransferView> {
     });
     
     try {
-      final success = await _controller.connect(widget.connection);
+      bool success = false;
+      
+      // 尝试复用现有的SSH连接
+      if (widget.sessionId != null) {
+        final sessionController = context.read<SshSessionController>();
+        final session = sessionController.sessions[widget.sessionId];
+        
+        if (session != null && session.client != null && session.status == SshConnectionStatus.authenticated) {
+          success = await _controller.connectWithExistingClient(session.client!, widget.connection);
+        }
+      }
+      
+      // 如果复用失败，创建新连接
+      if (!success) {
+        success = await _controller.connect(widget.connection);
+      }
+      
       if (success) {
+        // 设置默认路径
+        try {
+          final homeDir = await _controller.getRemoteHomeDirectory();
+          _currentRemotePath = homeDir;
+        } catch (e) {
+          _currentRemotePath = '/';
+        }
+        
         await _loadRemoteFiles();
       } else {
         setState(() {

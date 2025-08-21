@@ -49,6 +49,20 @@ class FileTransferController extends ChangeNotifier {
   /// 是否已连接
   bool get isConnected => _service.isConnected;
   
+  /// 使用现有SSH客户端连接
+  Future<bool> connectWithExistingClient(SSHClient client, SshConnection connection) async {
+    try {
+      final success = await _service.connectWithExistingClient(client);
+      if (success) {
+        _currentConnection = connection;
+        notifyListeners();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
+  
   /// 连接到SSH服务器
   Future<bool> connect(SshConnection connection) async {
     try {
@@ -61,6 +75,16 @@ class FileTransferController extends ChangeNotifier {
     } catch (e) {
       return false;
     }
+  }
+  
+  /// 获取远程用户主目录
+  Future<String> getRemoteHomeDirectory() async {
+    return await _service.getRemoteHomeDirectory();
+  }
+  
+  /// 获取本地Downloads目录
+  String getLocalDownloadDirectory() {
+    return _service.getLocalDownloadDirectory();
   }
   
   /// 断开连接

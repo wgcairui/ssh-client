@@ -68,7 +68,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          width: _isLeftPanelCollapsed ? 60.w : 380.w,
+          width: _isLeftPanelCollapsed ? 80.w : 480.w,
           decoration: BoxDecoration(
             border: Border(
               right: BorderSide(
@@ -215,7 +215,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
               },
               icon: Icon(
                 Icons.menu,
-                size: 20.sp,
+                size: 24.sp,
               ),
               tooltip: '展开面板',
             ),
@@ -224,7 +224,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
               onPressed: _showAddConnectionDialog,
               icon: const Icon(Icons.add),
               tooltip: '添加连接',
-              iconSize: 18.sp,
+              iconSize: 24.sp,
             ),
             SizedBox(height: 8.h),
             Consumer<SshController>(
@@ -232,7 +232,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                 return Text(
                   '${controller.connections.length}',
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 14.sp,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 );
@@ -264,16 +264,16 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                     },
                     icon: Icon(
                       Icons.menu_open,
-                      size: 16.sp,
+                      size: 20.sp,
                     ),
-                    iconSize: 16.sp,
+                    iconSize: 20.sp,
                     tooltip: '折叠面板',
                   ),
                 ),
                 if (MediaQuery.of(context).size.width > 200) ...[
                   Icon(
                     Icons.terminal,
-                    size: 16.sp,
+                    size: 20.sp,
                     color: Theme.of(context).primaryColor,
                   ),
                   SizedBox(width: 2.w),
@@ -282,7 +282,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                     child: Text(
                       'SSH',
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -296,16 +296,16 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                         _isSearching = true;
                       });
                     },
-                    icon: Icon(Icons.search, size: 16.sp),
-                    iconSize: 16.sp,
+                    icon: Icon(Icons.search, size: 20.sp),
+                    iconSize: 20.sp,
                     tooltip: '搜索连接',
                   ),
                 ),
                 Expanded(
                   child: IconButton(
                     onPressed: _showAddConnectionDialog,
-                    icon: Icon(Icons.add, size: 16.sp),
-                    iconSize: 16.sp,
+                    icon: Icon(Icons.add, size: 20.sp),
+                    iconSize: 20.sp,
                     tooltip: '添加连接',
                   ),
                 ),

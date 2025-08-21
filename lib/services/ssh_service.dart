@@ -37,6 +37,7 @@ class SshService {
   SshConnectionStatus get status => _status;
   String? get error => _error;
   SshConnection? get currentConnection => _currentConnection;
+  SSHClient? get client => _client;
   
   // 流
   Stream<String> get outputStream => _outputController.stream;

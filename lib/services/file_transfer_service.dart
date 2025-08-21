@@ -56,10 +56,23 @@ class FileTransferService {
   SftpClient? _sftp;
   bool _isConnected = false;
   
-  /// 连接到SSH服务器并初始化SFTP
+  /// 使用现有SSH客户端创建SFTP连接
+  Future<bool> connectWithExistingClient(SSHClient client) async {
+    try {
+      _client = client;
+      _sftp = await _client!.sftp();
+      _isConnected = true;
+      return true;
+    } catch (e) {
+      _isConnected = false;
+      return false;
+    }
+  }
+  
+  /// 连接到SSH服务器并初始化SFTP（备用方法）
   Future<bool> connect(SshConnection connection) async {
     try {
-      final socket = await SSHSocket.connect(connection.host, connection.port);
+      final socket = await SSHSocket.connect(connection.host, connection.port, timeout: const Duration(seconds: 10));
       
       if (connection.useKeyAuth && connection.privateKey != null) {
         _client = SSHClient(
@@ -95,6 +108,33 @@ class FileTransferService {
   
   /// 检查是否已连接
   bool get isConnected => _isConnected && _sftp != null;
+  
+  /// 获取远程用户主目录路径
+  Future<String> getRemoteHomeDirectory() async {
+    if (!isConnected) throw Exception('未连接到服务器');
+    
+    try {
+      // 尝试获取用户主目录
+      final result = await _client!.run('echo \$HOME');
+      final homePath = String.fromCharCodes(result).trim();
+      if (homePath.isNotEmpty && homePath != '\$HOME') {
+        return homePath;
+      }
+      // 备用方案：使用pwd获取当前目录
+      final pwdResult = await _client!.run('pwd');
+      return String.fromCharCodes(pwdResult).trim();
+    } catch (e) {
+      // 默认返回根目录
+      return '/';
+    }
+  }
+  
+  /// 获取本地Downloads目录路径
+  String getLocalDownloadDirectory() {
+    // 在Android上，通常是 /storage/emulated/0/Download
+    // 这里返回一个通用路径，实际使用时需要权限处理
+    return '/storage/emulated/0/Download';
+  }
   
   /// 列出远程目录内容
   Future<List<SftpName>> listRemoteDirectory(String path) async {
