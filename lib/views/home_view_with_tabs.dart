@@ -3,11 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../controllers/ssh_controller.dart';
 import '../controllers/ssh_tab_controller.dart';
+import '../controllers/app_settings_controller.dart';
 import '../widgets/connection_list_widget.dart';
 import '../widgets/ssh_tab_bar.dart';
 import '../widgets/single_terminal_manager.dart';
 import 'add_connection_view.dart';
 import 'update_settings_view.dart';
+import 'app_settings_view.dart';
 
 /// 支持多标签页的主界面
 class HomeViewWithTabs extends StatefulWidget {
@@ -69,7 +71,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          width: _isLeftPanelCollapsed ? 120.w : 720.w,
+          width: _isLeftPanelCollapsed ? 180.w : 720.w,
           decoration: BoxDecoration(
             border: Border(
               right: BorderSide(
@@ -103,7 +105,7 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
   /// 手机布局（堆叠模式）
   Widget _buildMobileLayout() {
     final tabController = context.watch<SshTabController>();
-    
+
     if (tabController.activeTab != null) {
       return _buildTerminalArea();
     }
@@ -156,13 +158,14 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
   void _handleConnectionSelected(String connectionId) async {
     final sshController = context.read<SshController>();
     final tabController = context.read<SshTabController>();
-    
+
     // 获取连接信息
     final connection = await sshController.getConnection(connectionId);
     if (connection == null) return;
 
     // 检查是否已达到最大标签页数量
-    if (tabController.isMaxTabsReached && !tabController.isConnectionOpen(connectionId)) {
+    if (tabController.isMaxTabsReached &&
+        !tabController.isConnectionOpen(connectionId)) {
       _showMaxTabsDialog();
       return;
     }
@@ -208,33 +211,39 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
         padding: EdgeInsets.all(8.w),
         child: Column(
           children: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _isLeftPanelCollapsed = false;
-                });
-              },
-              icon: Icon(
-                Icons.menu,
-                size: 36.sp,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isLeftPanelCollapsed = false;
+                  });
+                },
+                icon: Icon(
+                  Icons.menu,
+                  size: settings.getIconSize(36),
+                ),
+                tooltip: '展开面板',
               ),
-              tooltip: '展开面板',
             ),
             SizedBox(height: 8.h),
-            IconButton(
-              onPressed: _showAddConnectionDialog,
-              icon: const Icon(Icons.add),
-              tooltip: '添加连接',
-              iconSize: 24.sp,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => IconButton(
+                onPressed: _showAddConnectionDialog,
+                icon: const Icon(Icons.add),
+                tooltip: '添加连接',
+                iconSize: settings.getIconSize(24),
+              ),
             ),
             SizedBox(height: 8.h),
             Consumer<SshController>(
               builder: (context, controller, child) {
-                return Text(
-                  '${controller.connections.length}',
-                  style: TextStyle(
-                    fontSize: 21.sp,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                return Consumer<AppSettingsController>(
+                  builder: (context, settings, child) => Text(
+                    '${controller.connections.length}',
+                    style: settings.getSidebarTextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      customSize: 21,
+                    ),
                   ),
                 );
               },
@@ -249,73 +258,94 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
       padding: EdgeInsets.all(16.w),
       child: Column(
         children: [
-          if (!_isSearching) ...[ 
+          if (!_isSearching) ...[
             Row(
               children: [
                 Expanded(
-                  child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isLeftPanelCollapsed = true;
-                        if (_isSearching) {
-                          _isSearching = false;
-                          _searchController.clear();
-                        }
-                      });
-                    },
-                    icon: Icon(
-                      Icons.menu_open,
-                      size: 30.sp,
+                  child: Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isLeftPanelCollapsed = true;
+                          if (_isSearching) {
+                            _isSearching = false;
+                            _searchController.clear();
+                          }
+                        });
+                      },
+                      icon: Icon(
+                        Icons.menu_open,
+                        size: settings.getIconSize(30),
+                      ),
+                      iconSize: settings.getIconSize(20),
+                      tooltip: '折叠面板',
                     ),
-                    iconSize: 20.sp,
-                    tooltip: '折叠面板',
                   ),
                 ),
                 if (MediaQuery.of(context).size.width > 200) ...[
-                  Icon(
-                    Icons.terminal,
-                    size: 30.sp,
-                    color: Theme.of(context).primaryColor,
+                  Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => Icon(
+                      Icons.terminal,
+                      size: settings.getIconSize(30),
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
                   SizedBox(width: 2.w),
                   Expanded(
                     flex: 2,
-                    child: Text(
-                      'SSH',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
+                    child: Consumer<AppSettingsController>(
+                      builder: (context, settings, child) => Text(
+                        'SSH',
+                        style: settings.getSidebarTextStyle(
+                          customWeight: FontWeight.bold,
+                          customSize: 24,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
                 Expanded(
-                  child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isSearching = true;
-                      });
-                    },
-                    icon: Icon(Icons.search, size: 30.sp),
-                    iconSize: 20.sp,
-                    tooltip: '搜索连接',
+                  child: Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true;
+                        });
+                      },
+                      icon: Icon(
+                        Icons.search,
+                        size: settings.getIconSize(30),
+                      ),
+                      iconSize: settings.getIconSize(20),
+                      tooltip: '搜索连接',
+                    ),
                   ),
                 ),
                 Expanded(
-                  child: IconButton(
-                    onPressed: _showAddConnectionDialog,
-                    icon: Icon(Icons.add, size: 30.sp),
-                    iconSize: 20.sp,
-                    tooltip: '添加连接',
+                  child: Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => IconButton(
+                      onPressed: _showAddConnectionDialog,
+                      icon: Icon(
+                        Icons.add,
+                        size: settings.getIconSize(30),
+                      ),
+                      iconSize: settings.getIconSize(20),
+                      tooltip: '添加连接',
+                    ),
                   ),
                 ),
                 Expanded(
-                  child: IconButton(
-                    onPressed: _showSettingsMenu,
-                    icon: Icon(Icons.more_vert, size: 30.sp),
-                    iconSize: 20.sp,
-                    tooltip: '设置',
+                  child: Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => IconButton(
+                      onPressed: _showSettingsMenu,
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: settings.getIconSize(30),
+                      ),
+                      iconSize: settings.getIconSize(20),
+                      tooltip: '设置',
+                    ),
                   ),
                 ),
               ],
@@ -331,9 +361,11 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                       _searchController.clear();
                     });
                   },
-                  icon: Icon(
-                    Icons.menu_open,
-                    size: 30.sp,
+                  icon: Consumer<AppSettingsController>(
+                    builder: (context, settings, child) => Icon(
+                      Icons.menu_open,
+                      size: settings.getIconSize(30),
+                    ),
                   ),
                   tooltip: '折叠面板',
                 ),
@@ -384,10 +416,12 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
           Row(
             children: [
               if (!_isSearching) ...[
-                Icon(
-                  Icons.terminal,
-                  size: 36.sp,
-                  color: Theme.of(context).primaryColor,
+                Consumer<AppSettingsController>(
+                  builder: (context, settings, child) => Icon(
+                    Icons.terminal,
+                    size: settings.getIconSize(36),
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 SizedBox(width: 12.w),
                 Text(
@@ -398,14 +432,6 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
                   ),
                 ),
                 const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isSearching = true;
-                    });
-                  },
-                  icon: const Icon(Icons.search),
-                ),
                 IconButton(
                   onPressed: _showAddConnectionDialog,
                   icon: const Icon(Icons.add),
@@ -453,25 +479,35 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.terminal,
-            size: 120.sp,
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+          Consumer<AppSettingsController>(
+            builder: (context, settings, child) => Icon(
+              Icons.terminal,
+              size: settings.getIconSize(120),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+            ),
           ),
           SizedBox(height: 24.h),
           Text(
             '选择一个连接开始使用',
             style: TextStyle(
-              fontSize: 27.sp,
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              fontSize: 38.sp,
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 8.h),
           Text(
             '最多支持 ${SshTabController.maxTabs} 个同时连接',
             style: TextStyle(
-              fontSize: 21.sp,
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+              fontSize: 32.sp,
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withValues(alpha: 0.5),
             ),
           ),
           SizedBox(height: 16.h),
@@ -498,6 +534,19 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('应用设置'),
+                subtitle: const Text('字体、主题和显示设置'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AppSettingsView(),
+                    ),
+                  );
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.system_update),
                 title: const Text('自动更新设置'),
@@ -534,10 +583,12 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(
-              Icons.terminal,
-              color: Theme.of(context).primaryColor,
-              size: 36.sp,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => Icon(
+                Icons.terminal,
+                color: Theme.of(context).primaryColor,
+                size: settings.getIconSize(36),
+              ),
             ),
             SizedBox(width: 8.w),
             const Text('SSH 客户端'),

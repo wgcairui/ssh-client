@@ -11,11 +11,13 @@ class SshController extends ChangeNotifier {
   List<SshConnection> _connections = [];
   bool _isLoading = false;
   String? _error;
+  bool _mounted = true;
 
   // Getters
   List<SshConnection> get connections => _connections;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get mounted => _mounted;
 
   /// 初始化，加载所有连接
   Future<void> initialize() async {
@@ -24,11 +26,15 @@ class SshController extends ChangeNotifier {
 
   /// 加载所有连接配置
   Future<void> loadConnections() async {
+    if (!mounted) return; // Guard against disposed controller
+    
     _setLoading(true);
     try {
       _connections = await _databaseService.getAllConnections();
+      if (!mounted) return; // Check again after async operation
       _error = null;
     } catch (e) {
+      if (!mounted) return; // Check again after async operation
       _error = '加载连接配置失败: $e';
       if (kDebugMode) {
         print('Error loading connections: $e');
@@ -169,18 +175,21 @@ class SshController extends ChangeNotifier {
 
   /// 设置加载状态
   void _setLoading(bool loading) {
+    if (!mounted) return; // Guard against disposed controller
     _isLoading = loading;
     notifyListeners();
   }
 
   /// 清除错误信息
   void clearError() {
+    if (!mounted) return; // Guard against disposed controller
     _error = null;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _mounted = false;
     _databaseService.close();
     super.dispose();
   }

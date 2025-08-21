@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../controllers/ssh_controller.dart';
+import '../controllers/app_settings_controller.dart';
 import '../models/ssh_connection.dart';
 import '../views/add_connection_view.dart';
 import 'connection_item_widget.dart';
@@ -111,17 +112,21 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              _isSearching ? Icons.search_off : Icons.cloud_off,
-              size: 72.sp,
-              color: Theme.of(context).disabledColor,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => Icon(
+                _isSearching ? Icons.search_off : Icons.cloud_off,
+                size: settings.getIconSize(72),
+                color: Theme.of(context).disabledColor,
+              ),
             ),
             SizedBox(height: 16.h),
-            Text(
-              _isSearching ? '未找到匹配的连接' : '暂无 SSH 连接',
-              style: TextStyle(
-                fontSize: 24.sp,
-                color: Theme.of(context).disabledColor,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => Text(
+                _isSearching ? '未找到匹配的连接' : '暂无 SSH 连接',
+                style: settings.getSidebarTextStyle(
+                  color: Theme.of(context).disabledColor,
+                  customSize: 24,
+                ),
               ),
             ),
           ],
@@ -138,19 +143,23 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 72.sp,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              error,
-              style: TextStyle(
-                fontSize: 21.sp,
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => Icon(
+                Icons.error_outline,
+                size: settings.getIconSize(72),
                 color: Theme.of(context).colorScheme.error,
               ),
-              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            Consumer<AppSettingsController>(
+              builder: (context, settings, child) => Text(
+                error,
+                style: settings.getSidebarTextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  customSize: 21,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             SizedBox(height: 16.h),
             ElevatedButton(

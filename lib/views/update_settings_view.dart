@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../controllers/update_controller.dart';
+import '../controllers/app_settings_controller.dart';
 import '../services/update_service.dart';
 import '../widgets/update_dialog.dart';
 
@@ -37,11 +38,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
         title: const Text('自动更新设置'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Consumer<UpdateController>(
-        builder: (context, controller, child) {
-          return ListView(
-            padding: EdgeInsets.all(16.r),
-            children: [
+      body: Consumer<AppSettingsController>(
+        builder: (context, settingsController, child) {
+          return Consumer<UpdateController>(
+            builder: (context, controller, child) {
+              return ListView(
+                padding: EdgeInsets.all(16.r),
+                children: [
               // 当前版本信息
               _buildCurrentVersionCard(),
               SizedBox(height: 16.h),
@@ -61,10 +64,18 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               // 其他设置
               _buildOtherSettings(controller),
             ],
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  /// 获取响应式字体大小
+  double _getResponsiveFontSize(BuildContext context, double baseSize) {
+    final settingsController = Provider.of<AppSettingsController>(context, listen: false);
+    return (baseSize * settingsController.fontSettings.fontSize / 14.0).clamp(8.0, 60.0);
   }
   
   Widget _buildCurrentVersionCard() {
@@ -85,7 +96,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Text(
                   '版本信息',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: _getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -97,12 +108,12 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               children: [
                 Text(
                   '当前版本：',
-                  style: TextStyle(fontSize: 21.sp),
+                  style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
                 ),
                 Text(
                   _currentVersion,
                   style: TextStyle(
-                    fontSize: 21.sp,
+                    fontSize: _getResponsiveFontSize(context, 21),
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).primaryColor,
                   ),
@@ -133,7 +144,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Text(
                   '检查更新',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: _getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -168,7 +179,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                   controller.status == UpdateStatus.checking
                       ? '检查中...'
                       : '手动检查更新',
-                  style: TextStyle(fontSize: 21.sp),
+                  style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
                 ),
               ),
             ),
@@ -246,7 +257,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             child: Text(
               statusText,
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: _getResponsiveFontSize(context, 18),
                 color: statusColor,
               ),
             ),
@@ -257,7 +268,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               onPressed: () => _showUpdateDialog(controller),
               child: Text(
                 controller.status == UpdateStatus.available ? '立即更新' : '立即安装',
-                style: TextStyle(fontSize: 18.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
               ),
             ),
           ],
@@ -284,7 +295,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Text(
                   '自动更新',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: _getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -296,11 +307,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             SwitchListTile(
               title: Text(
                 '自动检查更新',
-                style: TextStyle(fontSize: 21.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
               ),
               subtitle: Text(
                 '应用启动时自动检查是否有新版本',
-                style: TextStyle(fontSize: 18.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
               ),
               value: controller.autoCheckEnabled,
               onChanged: (value) {
@@ -314,11 +325,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               ListTile(
                 title: Text(
                   '检查间隔',
-                  style: TextStyle(fontSize: 21.sp),
+                  style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
                 ),
                 subtitle: Text(
                   '每${controller.checkIntervalHours}小时检查一次',
-                  style: TextStyle(fontSize: 18.sp),
+                  style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
                 ),
                 trailing: DropdownButton<int>(
                   value: controller.checkIntervalHours,
@@ -360,7 +371,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Text(
                   '更新通道',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: _getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -372,11 +383,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             SwitchListTile(
               title: Text(
                 '接收测试版更新',
-                style: TextStyle(fontSize: 21.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
               ),
               subtitle: Text(
                 '包含预发布版本，可能不稳定但包含最新功能',
-                style: TextStyle(fontSize: 18.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
               ),
               value: controller.includePrerelease,
               onChanged: (value) {
@@ -407,7 +418,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Text(
                   '其他设置',
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: _getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -419,17 +430,17 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             ListTile(
               title: Text(
                 '清理下载文件',
-                style: TextStyle(fontSize: 21.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 21)),
               ),
               subtitle: Text(
                 '删除已下载的APK文件以释放存储空间',
-                style: TextStyle(fontSize: 18.sp),
+                style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
               ),
               trailing: TextButton(
                 onPressed: () => _cleanupDownloads(controller),
                 child: Text(
                   '清理',
-                  style: TextStyle(fontSize: 18.sp),
+                  style: TextStyle(fontSize: _getResponsiveFontSize(context, 18)),
                 ),
               ),
             ),
