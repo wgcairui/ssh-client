@@ -79,13 +79,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Icon(
                   Icons.info_outline,
                   color: Theme.of(context).primaryColor,
-                  size: 20.sp,
+                  size: 30.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '版本信息',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -97,12 +97,12 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               children: [
                 Text(
                   '当前版本：',
-                  style: TextStyle(fontSize: 14.sp),
+                  style: TextStyle(fontSize: 21.sp),
                 ),
                 Text(
                   _currentVersion,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 21.sp,
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).primaryColor,
                   ),
@@ -127,13 +127,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Icon(
                   Icons.refresh,
                   color: Theme.of(context).primaryColor,
-                  size: 20.sp,
+                  size: 30.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '检查更新',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -168,7 +168,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                   controller.status == UpdateStatus.checking
                       ? '检查中...'
                       : '手动检查更新',
-                  style: TextStyle(fontSize: 14.sp),
+                  style: TextStyle(fontSize: 21.sp),
                 ),
               ),
             ),
@@ -239,14 +239,14 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
           Icon(
             statusIcon,
             color: statusColor,
-            size: 16.sp,
+            size: 24.sp,
           ),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
               statusText,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: statusColor,
               ),
             ),
@@ -257,7 +257,7 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               onPressed: () => _showUpdateDialog(controller),
               child: Text(
                 controller.status == UpdateStatus.available ? '立即更新' : '立即安装',
-                style: TextStyle(fontSize: 12.sp),
+                style: TextStyle(fontSize: 18.sp),
               ),
             ),
           ],
@@ -278,13 +278,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Icon(
                   Icons.auto_mode,
                   color: Theme.of(context).primaryColor,
-                  size: 20.sp,
+                  size: 30.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '自动更新',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -296,11 +296,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             SwitchListTile(
               title: Text(
                 '自动检查更新',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
               subtitle: Text(
                 '应用启动时自动检查是否有新版本',
-                style: TextStyle(fontSize: 12.sp),
+                style: TextStyle(fontSize: 18.sp),
               ),
               value: controller.autoCheckEnabled,
               onChanged: (value) {
@@ -314,11 +314,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
               ListTile(
                 title: Text(
                   '检查间隔',
-                  style: TextStyle(fontSize: 14.sp),
+                  style: TextStyle(fontSize: 21.sp),
                 ),
                 subtitle: Text(
                   '每${controller.checkIntervalHours}小时检查一次',
-                  style: TextStyle(fontSize: 12.sp),
+                  style: TextStyle(fontSize: 18.sp),
                 ),
                 trailing: DropdownButton<int>(
                   value: controller.checkIntervalHours,
@@ -354,13 +354,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Icon(
                   Icons.stream,
                   color: Theme.of(context).primaryColor,
-                  size: 20.sp,
+                  size: 30.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '更新通道',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -372,11 +372,11 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             SwitchListTile(
               title: Text(
                 '接收测试版更新',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
               subtitle: Text(
                 '包含预发布版本，可能不稳定但包含最新功能',
-                style: TextStyle(fontSize: 12.sp),
+                style: TextStyle(fontSize: 18.sp),
               ),
               value: controller.includePrerelease,
               onChanged: (value) {
@@ -401,13 +401,13 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
                 Icon(
                   Icons.settings,
                   color: Theme.of(context).primaryColor,
-                  size: 20.sp,
+                  size: 30.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '其他设置',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -419,17 +419,17 @@ class _UpdateSettingsViewState extends State<UpdateSettingsView> {
             ListTile(
               title: Text(
                 '清理下载文件',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
               subtitle: Text(
                 '删除已下载的APK文件以释放存储空间',
-                style: TextStyle(fontSize: 12.sp),
+                style: TextStyle(fontSize: 18.sp),
               ),
               trailing: TextButton(
                 onPressed: () => _cleanupDownloads(controller),
                 child: Text(
                   '清理',
-                  style: TextStyle(fontSize: 12.sp),
+                  style: TextStyle(fontSize: 18.sp),
                 ),
               ),
             ),

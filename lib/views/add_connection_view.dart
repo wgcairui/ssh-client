@@ -4,10 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../controllers/ssh_controller.dart';
+import '../models/ssh_connection.dart';
 
 /// 添加连接页面 - 针对 OPPO Pad 4 Pro 优化
 class AddConnectionView extends StatefulWidget {
-  const AddConnectionView({super.key});
+  final SshConnection? connection; // 如果为null则为新增模式，不为null则为编辑模式
+  
+  const AddConnectionView({super.key, this.connection});
 
   @override
   State<AddConnectionView> createState() => _AddConnectionViewState();
@@ -29,6 +32,35 @@ class _AddConnectionViewState extends State<AddConnectionView> {
   bool _useKeyFile = false; // true: 文件选择, false: 文本输入
   String? _selectedKeyFileName;
 
+  // 判断是否为编辑模式
+  bool get _isEditMode => widget.connection != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFormData();
+  }
+
+  /// 初始化表单数据（编辑模式时填充现有数据）
+  void _initializeFormData() {
+    final connection = widget.connection;
+    if (connection != null) {
+      _nameController.text = connection.name;
+      _hostController.text = connection.host;
+      _portController.text = connection.port.toString();
+      _usernameController.text = connection.username;
+      _descriptionController.text = connection.description ?? '';
+      
+      // 设置认证方式
+      _useKeyAuth = connection.useKeyAuth;
+      if (_useKeyAuth && connection.privateKey != null) {
+        _privateKeyController.text = connection.privateKey!;
+      } else if (!_useKeyAuth && connection.password != null) {
+        _passwordController.text = connection.password!;
+      }
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -45,7 +77,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('添加 SSH 连接'),
+        title: Text(_isEditMode ? '编辑 SSH 连接' : '添加 SSH 连接'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -135,7 +167,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
     return Text(
       title,
       style: TextStyle(
-        fontSize: 18.sp,
+        fontSize: 27.sp,
         fontWeight: FontWeight.w600,
         color: Theme.of(context).colorScheme.primary,
       ),
@@ -280,7 +312,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
             Text(
               title,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               ),
@@ -379,14 +411,14 @@ class _AddConnectionViewState extends State<AddConnectionView> {
           children: [
             Icon(
               icon,
-              size: 16.sp,
+              size: 24.sp,
               color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
             ),
             SizedBox(width: 4.w),
             Text(
               title,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               ),
@@ -415,7 +447,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
               children: [
                 Icon(
                   _selectedKeyFileName != null ? Icons.file_present : Icons.file_upload_outlined,
-                  size: 32.sp,
+                  size: 48.sp,
                   color: _selectedKeyFileName != null 
                       ? Theme.of(context).colorScheme.primary 
                       : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -424,7 +456,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
                 Text(
                   _selectedKeyFileName ?? '点击选择密钥文件',
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 21.sp,
                     color: _selectedKeyFileName != null 
                         ? Theme.of(context).colorScheme.primary 
                         : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -435,7 +467,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
                 Text(
                   '支持格式：.pem, .key, .ppk, .rsa, .ed25519',
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 15.sp,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -451,7 +483,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
                 child: Text(
                   '已选择: $_selectedKeyFileName',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 18.sp,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -598,7 +630,7 @@ class _AddConnectionViewState extends State<AddConnectionView> {
                 child: const CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.save),
-        label: Text(_isLoading ? '保存中...' : '保存连接'),
+        label: Text(_isLoading ? '保存中...' : (_isEditMode ? '更新连接' : '保存连接')),
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
@@ -620,27 +652,47 @@ class _AddConnectionViewState extends State<AddConnectionView> {
     });
 
     try {
-      final success = await context.read<SshController>().addConnection(
-        name: _nameController.text.trim(),
-        host: _hostController.text.trim(),
-        port: int.parse(_portController.text.trim()),
-        username: _usernameController.text.trim(),
-        password: _useKeyAuth ? null : _passwordController.text.trim(),
-        privateKey: _useKeyAuth ? _privateKeyController.text.trim() : null,
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
-            : _descriptionController.text.trim(),
-      );
+      final controller = context.read<SshController>();
+      final bool success;
+      
+      if (_isEditMode) {
+        // 编辑模式 - 更新现有连接
+        final updatedConnection = widget.connection!.copyWith(
+          name: _nameController.text.trim(),
+          host: _hostController.text.trim(),
+          port: int.parse(_portController.text.trim()),
+          username: _usernameController.text.trim(),
+          password: _useKeyAuth ? null : _passwordController.text.trim(),
+          privateKey: _useKeyAuth ? _privateKeyController.text.trim() : null,
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+        );
+        success = await controller.updateConnection(updatedConnection);
+      } else {
+        // 新增模式 - 创建新连接
+        success = await controller.addConnection(
+          name: _nameController.text.trim(),
+          host: _hostController.text.trim(),
+          port: int.parse(_portController.text.trim()),
+          username: _usernameController.text.trim(),
+          password: _useKeyAuth ? null : _passwordController.text.trim(),
+          privateKey: _useKeyAuth ? _privateKeyController.text.trim() : null,
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+        );
+      }
 
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('连接已保存')),
+            SnackBar(content: Text(_isEditMode ? '连接已更新' : '连接已保存')),
           );
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('保存失败，请重试')),
+            SnackBar(content: Text(_isEditMode ? '更新失败，请重试' : '保存失败，请重试')),
           );
         }
       }

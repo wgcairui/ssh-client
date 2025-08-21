@@ -165,14 +165,14 @@ class _FileTransferViewState extends State<FileTransferView> {
           children: [
             Icon(
               Icons.error_outline,
-              size: 64.sp,
+              size: 96.sp,
               color: Theme.of(context).colorScheme.error,
             ),
             SizedBox(height: 16.h),
             Text(
               _error!,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 24.sp,
                 color: Theme.of(context).colorScheme.error,
               ),
               textAlign: TextAlign.center,
@@ -212,7 +212,7 @@ class _FileTransferViewState extends State<FileTransferView> {
         children: [
           Icon(
             Icons.folder_outlined,
-            size: 20.sp,
+            size: 30.sp,
             color: Theme.of(context).colorScheme.primary,
           ),
           SizedBox(width: 8.w),
@@ -220,7 +220,7 @@ class _FileTransferViewState extends State<FileTransferView> {
             child: Text(
               '远程路径: $_currentRemotePath',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -244,14 +244,14 @@ class _FileTransferViewState extends State<FileTransferView> {
           children: [
             Icon(
               Icons.folder_open,
-              size: 64.sp,
+              size: 96.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             SizedBox(height: 16.h),
             Text(
               '目录为空',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 24.sp,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -287,7 +287,7 @@ class _FileTransferViewState extends State<FileTransferView> {
         title: Text(
           fileName,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 21.sp,
             fontWeight: isDirectory ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
@@ -375,13 +375,13 @@ class _FileTransferViewState extends State<FileTransferView> {
                   children: [
                     Icon(
                       Icons.transfer_within_a_station,
-                      size: 16.sp,
+                      size: 24.sp,
                     ),
                     SizedBox(width: 8.w),
                     Text(
                       '传输任务 (${tasks.length})',
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -424,7 +424,7 @@ class _FileTransferViewState extends State<FileTransferView> {
               children: [
                 Icon(
                   task.isUpload ? Icons.upload : Icons.download,
-                  size: 16.sp,
+                  size: 24.sp,
                   color: statusColor,
                 ),
                 SizedBox(width: 8.w),
@@ -432,7 +432,7 @@ class _FileTransferViewState extends State<FileTransferView> {
                   child: Text(
                     progress.fileName,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -441,7 +441,7 @@ class _FileTransferViewState extends State<FileTransferView> {
                 Text(
                   _getStatusText(progress.status),
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 15.sp,
                     color: statusColor,
                   ),
                 ),
@@ -471,14 +471,14 @@ class _FileTransferViewState extends State<FileTransferView> {
                   Text(
                     '${_formatFileSize(progress.bytesTransferred)} / ${_formatFileSize(progress.totalBytes)}',
                     style: TextStyle(
-                      fontSize: 10.sp,
+                      fontSize: 15.sp,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   Text(
                     '${(progress.progress * 100).toInt()}%',
                     style: TextStyle(
-                      fontSize: 10.sp,
+                      fontSize: 15.sp,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
@@ -490,7 +490,7 @@ class _FileTransferViewState extends State<FileTransferView> {
               Text(
                 progress.error!,
                 style: TextStyle(
-                  fontSize: 10.sp,
+                  fontSize: 15.sp,
                   color: Theme.of(context).colorScheme.error,
                 ),
                 maxLines: 2,

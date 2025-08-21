@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../controllers/ssh_controller.dart';
 import '../models/ssh_connection.dart';
+import '../views/add_connection_view.dart';
 import 'connection_item_widget.dart';
 
 /// 连接列表组件 - 针对 OPPO Pad 4 Pro 优化
@@ -112,14 +113,14 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
           children: [
             Icon(
               _isSearching ? Icons.search_off : Icons.cloud_off,
-              size: 48.sp,
+              size: 72.sp,
               color: Theme.of(context).disabledColor,
             ),
             SizedBox(height: 16.h),
             Text(
               _isSearching ? '未找到匹配的连接' : '暂无 SSH 连接',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 24.sp,
                 color: Theme.of(context).disabledColor,
               ),
             ),
@@ -152,14 +153,14 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
           children: [
             Icon(
               Icons.error_outline,
-              size: 48.sp,
+              size: 72.sp,
               color: Theme.of(context).colorScheme.error,
             ),
             SizedBox(height: 16.h),
             Text(
               error,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 color: Theme.of(context).colorScheme.error,
               ),
               textAlign: TextAlign.center,
@@ -179,9 +180,10 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
 
   /// 编辑连接
   void _editConnection(SshConnection connection) {
-    // TODO: 实现编辑连接功能
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('编辑功能即将上线')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AddConnectionView(connection: connection),
+      ),
     );
   }
 

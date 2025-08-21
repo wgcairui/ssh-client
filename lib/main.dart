@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(2160, 1440), // OPPO Pad 4 Pro 分辨率优化
+      designSize: const Size(3392, 2400), // OPPO Pad 4 Pro 分辨率优化 (7:5)
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {

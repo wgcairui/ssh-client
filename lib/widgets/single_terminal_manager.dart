@@ -312,14 +312,14 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
         children: [
           Icon(
             Icons.terminal,
-            size: 80.sp,
+            size: 120.sp,
             color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
           ),
           SizedBox(height: 24.h),
           Text(
             '正在初始化终端...',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 27.sp,
               color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
           ),
@@ -362,14 +362,14 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
                 Text(
                   currentState.connection.name,
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 21.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   currentState.connection.connectionString,
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 15.sp,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -383,7 +383,7 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
                 onPressed: _openFileTransfer,
                 icon: Icon(
                   Icons.folder_open,
-                  size: 18.sp,
+                  size: 27.sp,
                 ),
                 tooltip: '文件传输',
               ),
@@ -391,7 +391,7 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
               onPressed: service.isConnected ? _disconnectCurrentTab : _reconnectCurrentTab,
               icon: Icon(
                 service.isConnected ? Icons.link_off : Icons.refresh,
-                size: 18.sp,
+                size: 27.sp,
               ),
               tooltip: service.isConnected ? '断开连接' : '重新连接',
             ),
@@ -438,7 +438,7 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
 
     return Icon(
       icon,
-      size: 16.sp,
+      size: 24.sp,
       color: color,
     );
   }
@@ -483,7 +483,7 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
           Text(
             '正在连接...',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 21.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -491,7 +491,7 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
           Text(
             state.connection.connectionString,
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 18.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -508,14 +508,14 @@ class _SingleTerminalManagerState extends State<SingleTerminalManager> {
         children: [
           Icon(
             Icons.error_outline,
-            size: 48.sp,
+            size: 72.sp,
             color: Theme.of(context).colorScheme.error,
           ),
           SizedBox(height: 16.h),
           Text(
             state.error!,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 21.sp,
               color: Theme.of(context).colorScheme.error,
             ),
             textAlign: TextAlign.center,

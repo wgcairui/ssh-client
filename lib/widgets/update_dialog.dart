@@ -28,13 +28,13 @@ class UpdateDialog extends StatelessWidget {
               Icon(
                 Icons.system_update,
                 color: Theme.of(context).primaryColor,
-                size: 24.sp,
+                size: 36.sp,
               ),
               SizedBox(width: 8.w),
               Text(
                 forceUpdate ? '必须更新' : '发现新版本',
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 27.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -54,7 +54,7 @@ class UpdateDialog extends StatelessWidget {
                   Text(
                     '更新内容：',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 21.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -69,7 +69,7 @@ class UpdateDialog extends StatelessWidget {
                     child: Text(
                       version.body,
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 18.sp,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -103,14 +103,14 @@ class UpdateDialog extends StatelessWidget {
             Text(
               '版本：',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               version.version,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue,
               ),
@@ -126,7 +126,7 @@ class UpdateDialog extends StatelessWidget {
                 child: Text(
                   '测试版',
                   style: TextStyle(
-                    fontSize: 10.sp,
+                    fontSize: 15.sp,
                     color: Colors.white,
                   ),
                 ),
@@ -139,20 +139,20 @@ class UpdateDialog extends StatelessWidget {
           children: [
             Text(
               '大小：',
-              style: TextStyle(fontSize: 12.sp),
+              style: TextStyle(fontSize: 18.sp),
             ),
             Text(
               version.formattedSize,
-              style: TextStyle(fontSize: 12.sp),
+              style: TextStyle(fontSize: 18.sp),
             ),
             SizedBox(width: 16.w),
             Text(
               '发布时间：',
-              style: TextStyle(fontSize: 12.sp),
+              style: TextStyle(fontSize: 18.sp),
             ),
             Text(
               version.formattedPublishTime,
-              style: TextStyle(fontSize: 12.sp),
+              style: TextStyle(fontSize: 18.sp),
             ),
           ],
         ),
@@ -170,14 +170,14 @@ class UpdateDialog extends StatelessWidget {
             Text(
               '下载进度',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               '${(controller.downloadProgress * 100).toStringAsFixed(1)}%',
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: Colors.blue,
               ),
             ),
@@ -241,7 +241,7 @@ class UpdateDialog extends StatelessWidget {
           child: Text(
             statusText,
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 18.sp,
               color: statusColor,
             ),
           ),
@@ -265,7 +265,7 @@ class UpdateDialog extends StatelessWidget {
               },
               child: Text(
                 '忽略',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
             ),
           );
@@ -275,7 +275,7 @@ class UpdateDialog extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 '稍后提醒',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
             ),
           );
@@ -286,7 +286,7 @@ class UpdateDialog extends StatelessWidget {
             onPressed: () => controller.downloadUpdate(),
             child: Text(
               '立即更新',
-              style: TextStyle(fontSize: 14.sp),
+              style: TextStyle(fontSize: 21.sp),
             ),
           ),
         );
@@ -299,7 +299,7 @@ class UpdateDialog extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 '稍后安装',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
             ),
           );
@@ -310,7 +310,7 @@ class UpdateDialog extends StatelessWidget {
             onPressed: () => controller.installUpdate(),
             child: Text(
               '立即安装',
-              style: TextStyle(fontSize: 14.sp),
+              style: TextStyle(fontSize: 21.sp),
             ),
           ),
         );
@@ -322,7 +322,7 @@ class UpdateDialog extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               '取消',
-              style: TextStyle(fontSize: 14.sp),
+              style: TextStyle(fontSize: 21.sp),
             ),
           ),
         );
@@ -332,7 +332,7 @@ class UpdateDialog extends StatelessWidget {
             onPressed: () => controller.downloadUpdate(),
             child: Text(
               '重试',
-              style: TextStyle(fontSize: 14.sp),
+              style: TextStyle(fontSize: 21.sp),
             ),
           ),
         );
@@ -346,7 +346,7 @@ class UpdateDialog extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 '后台运行',
-                style: TextStyle(fontSize: 14.sp),
+                style: TextStyle(fontSize: 21.sp),
               ),
             ),
           );
@@ -359,7 +359,7 @@ class UpdateDialog extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               '关闭',
-              style: TextStyle(fontSize: 14.sp),
+              style: TextStyle(fontSize: 21.sp),
             ),
           ),
         );

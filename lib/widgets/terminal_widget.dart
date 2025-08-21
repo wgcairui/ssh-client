@@ -280,7 +280,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
                 Text(
                   _connection?.name ?? '未知连接',
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 21.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -288,7 +288,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
                   Text(
                     _connection!.connectionString,
                     style: TextStyle(
-                      fontSize: 10.sp,
+                      fontSize: 15.sp,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
@@ -302,7 +302,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
                 onPressed: _openFileTransfer,
                 icon: Icon(
                   Icons.folder_open,
-                  size: 18.sp,
+                  size: 27.sp,
                 ),
                 tooltip: '文件传输',
               ),
@@ -310,7 +310,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
               onPressed: service.isConnected ? _disconnect : _reconnect,
               icon: Icon(
                 service.isConnected ? Icons.link_off : Icons.refresh,
-                size: 18.sp,
+                size: 27.sp,
               ),
               tooltip: service.isConnected ? '断开连接' : '重新连接',
             ),
@@ -359,7 +359,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
 
     return Icon(
       icon,
-      size: 16.sp,
+      size: 24.sp,
       color: color,
     );
   }
@@ -396,7 +396,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
           Text(
             '正在连接...',
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 21.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -405,7 +405,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
             Text(
               _connection!.connectionString,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -423,14 +423,14 @@ class _TerminalWidgetState extends State<TerminalWidget> {
         children: [
           Icon(
             Icons.error_outline,
-            size: 48.sp,
+            size: 72.sp,
             color: Theme.of(context).colorScheme.error,
           ),
           SizedBox(height: 16.h),
           Text(
             _error!,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 21.sp,
               color: Theme.of(context).colorScheme.error,
             ),
             textAlign: TextAlign.center,

@@ -60,7 +60,7 @@ class ConnectionItemWidget extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.computer,
-                      size: 20.sp,
+                      size: 30.sp,
                       color: isSelected
                           ? colorScheme.primary
                           : colorScheme.onSurfaceVariant,
@@ -75,7 +75,7 @@ class ConnectionItemWidget extends StatelessWidget {
                         Text(
                           connection.name,
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? colorScheme.primary
@@ -88,7 +88,7 @@ class ConnectionItemWidget extends StatelessWidget {
                         Text(
                           connection.connectionString,
                           style: TextStyle(
-                            fontSize: 12.sp,
+                            fontSize: 18.sp,
                             color: colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
@@ -101,7 +101,7 @@ class ConnectionItemWidget extends StatelessWidget {
                   PopupMenuButton<String>(
                     icon: Icon(
                       Icons.more_vert,
-                      size: 20.sp,
+                      size: 30.sp,
                       color: colorScheme.onSurfaceVariant,
                     ),
                     shape: RoundedRectangleBorder(
@@ -178,7 +178,7 @@ class ConnectionItemWidget extends StatelessWidget {
                 Text(
                   connection.description!,
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 18.sp,
                     color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 2,
@@ -211,14 +211,14 @@ class ConnectionItemWidget extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 12.sp,
+            size: 18.sp,
             color: colorScheme.onSurfaceVariant,
           ),
           SizedBox(width: 4.w),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10.sp,
+              fontSize: 15.sp,
               color: colorScheme.onSurfaceVariant,
             ),
           ),

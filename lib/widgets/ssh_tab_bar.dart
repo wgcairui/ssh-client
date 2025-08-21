@@ -82,7 +82,7 @@ class _SshTabBarState extends State<SshTabBar> {
             child: Text(
               '暂无连接',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 21.sp,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
@@ -165,7 +165,7 @@ class _SshTabBarState extends State<SshTabBar> {
                   child: Text(
                     tab.title,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 18.sp,
                       fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
                       color: isActive 
                           ? Theme.of(context).colorScheme.onSurface
@@ -183,7 +183,7 @@ class _SshTabBarState extends State<SshTabBar> {
                   padding: EdgeInsets.all(4.w),
                   child: Icon(
                     Icons.close,
-                    size: 14.sp,
+                    size: 21.sp,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -242,7 +242,7 @@ class _SshTabBarState extends State<SshTabBar> {
     
     return Icon(
       icon,
-      size: 8.sp,
+      size: 12.sp,
       color: color,
     );
   }
@@ -266,7 +266,7 @@ class _SshTabBarState extends State<SshTabBar> {
         onPressed: canAddTab ? widget.onAddTab : null,
         icon: Icon(
           Icons.add,
-          size: 20.sp,
+          size: 30.sp,
           color: canAddTab 
               ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
