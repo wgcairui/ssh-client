@@ -150,7 +150,7 @@ jobs:
 
   # Create development release for main branch pushes
   dev-release:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: false  # Temporarily disabled to avoid API rate limits
     needs: build
     runs-on: ubuntu-latest
     
