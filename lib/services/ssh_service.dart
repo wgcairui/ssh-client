@@ -21,6 +21,12 @@ class SshService {
   SshConnectionStatus _status = SshConnectionStatus.disconnected;
   String? _error;
   SshConnection? _currentConnection;
+  Timer? _keepAliveTimer;
+  DateTime? _lastActivity;
+
+  // 保活配置
+  static const Duration _keepAliveInterval = Duration(seconds: 30);
+  static const Duration _inactivityThreshold = Duration(minutes: 5);
 
   // 流控制器
   final StreamController<String> _outputController = StreamController<String>.broadcast();
@@ -91,6 +97,9 @@ class SshService {
       // 创建会话
       await _createShell();
       
+      // 启动保活机制
+      _startKeepAlive();
+      
       return true;
 
     } catch (e) {
@@ -145,6 +154,7 @@ class SshService {
 
     try {
       _session!.write(utf8.encode(input));
+      _updateActivity(); // 更新活动时间
     } catch (e) {
       _setError('发送命令失败: $e');
     }
@@ -165,6 +175,9 @@ class SshService {
 
   /// 断开连接
   Future<void> disconnect() async {
+    // 停止保活定时器
+    _stopKeepAlive();
+    
     try {
       if (_session != null) {
         _session!.close();
@@ -181,6 +194,7 @@ class SshService {
       }
     } finally {
       _currentConnection = null;
+      _lastActivity = null;
       _setStatus(SshConnectionStatus.disconnected);
       _setError(null);
     }
@@ -220,6 +234,59 @@ class SshService {
         return _error ?? '连接错误';
     }
   }
+
+  /// 开始保活机制
+  void _startKeepAlive() {
+    _updateActivity();
+    _keepAliveTimer = Timer.periodic(_keepAliveInterval, (timer) {
+      _performKeepAlive();
+    });
+  }
+
+  /// 停止保活机制
+  void _stopKeepAlive() {
+    _keepAliveTimer?.cancel();
+    _keepAliveTimer = null;
+  }
+
+  /// 更新活动时间
+  void _updateActivity() {
+    _lastActivity = DateTime.now();
+  }
+
+  /// 执行保活操作
+  void _performKeepAlive() {
+    if (_client == null || _session == null || !isConnected) {
+      _stopKeepAlive();
+      return;
+    }
+
+    final now = DateTime.now();
+    final lastActivity = _lastActivity ?? now;
+    
+    // 如果超过非活跃阈值时间，发送保活包
+    if (now.difference(lastActivity) > _inactivityThreshold) {
+      try {
+        // 发送一个空的命令来保持连接活跃
+        // 使用echo命令，不会产生明显的输出影响
+        write('\x00'); // 发送null字符作为保活信号
+        
+        if (kDebugMode) {
+          print('SSH保活: 发送保活包到 ${_currentConnection?.connectionString}');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('SSH保活失败: $e');
+        }
+        // 保活失败，可能连接已断开
+        _setError('连接保活失败: $e');
+        _setStatus(SshConnectionStatus.error);
+      }
+    }
+  }
+
+  /// 获取连接信息
+  SshConnection get connection => _currentConnection!;
 
   /// 释放资源
   void dispose() {

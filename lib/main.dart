@@ -4,8 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'controllers/ssh_controller.dart';
 import 'controllers/ssh_session_controller.dart';
+import 'controllers/ssh_tab_controller.dart';
 import 'controllers/file_transfer_controller.dart';
-import 'views/home_view.dart';
+import 'views/home_view_with_tabs.dart';
 
 void main() async {
   // 确保Flutter绑定初始化
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
           providers: [
             ChangeNotifierProvider(create: (context) => SshController()),
             ChangeNotifierProvider(create: (context) => SshSessionController()),
+            ChangeNotifierProvider(create: (context) => SshTabController()),
             ChangeNotifierProvider(create: (context) => FileTransferController()),
           ],
           child: MaterialApp(
@@ -54,7 +56,7 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
             ),
             themeMode: ThemeMode.system,
-            home: const HomeView(),
+            home: const HomeViewWithTabs(),
           ),
         );
       },

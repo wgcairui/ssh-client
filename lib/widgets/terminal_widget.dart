@@ -13,11 +13,13 @@ import '../views/file_transfer_view.dart';
 class TerminalWidget extends StatefulWidget {
   final String connectionId;
   final VoidCallback? onClose;
+  final bool isActive;
 
   const TerminalWidget({
     super.key,
     required this.connectionId,
     this.onClose,
+    this.isActive = true,
   });
 
   @override
@@ -32,10 +34,12 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   StreamSubscription? _statusSubscription;
   bool _isConnecting = false;
   String? _error;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
     _initializeTerminal();
   }
 
