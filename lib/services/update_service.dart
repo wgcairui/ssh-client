@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import '../models/app_version.dart';
 
 /// 更新检查服务
@@ -12,6 +14,52 @@ class UpdateService {
   static const String _repoOwner = 'wgcairui';
   static const String _repoName = 'ssh-client';
   static const String _githubApiBase = 'https://api.github.com';
+  
+  // 与原生代码通信的通道
+  static const MethodChannel _channel = MethodChannel('com.cairui.sshtools.ssh_client/apk_installer');
+  
+  /// 检查是否为Android 13或更高版本（API 33+）
+  Future<bool> _isAndroid13OrHigher() async {
+    if (!Platform.isAndroid) return false;
+    
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.version.sdkInt >= 33; // Android 13 = API 33
+    } catch (e) {
+      debugPrint('获取Android版本信息失败: $e');
+      // 如果无法获取版本信息，默认使用权限请求策略
+      return false;
+    }
+  }
+  
+  /// 请求适当的存储权限
+  Future<bool> _requestStoragePermissions() async {
+    if (!Platform.isAndroid) return true;
+    
+    try {
+      final isAndroid13Plus = await _isAndroid13OrHigher();
+      
+      if (isAndroid13Plus) {
+        // Android 13+ 不需要存储权限来访问应用专用外部目录
+        return true;
+      } else {
+        // Android 12 及以下需要存储权限
+        final status = await Permission.storage.request();
+        if (status.isGranted) {
+          return true;
+        } else if (status.isPermanentlyDenied) {
+          // 用户永久拒绝权限，提示前往设置
+          throw Exception('存储权限被永久拒绝，请前往设置手动开启');
+        } else {
+          throw Exception('需要存储权限才能下载更新文件');
+        }
+      }
+    } catch (e) {
+      debugPrint('请求存储权限失败: $e');
+      rethrow;
+    }
+  }
   
   /// 获取最新版本信息
   Future<AppVersion?> getLatestVersion({bool includePrerelease = true}) async {
@@ -87,11 +135,9 @@ class UpdateService {
   }) async {
     try {
       // 请求存储权限
-      if (Platform.isAndroid) {
-        final status = await Permission.storage.request();
-        if (!status.isGranted) {
-          throw Exception('需要存储权限才能下载更新');
-        }
+      final hasPermission = await _requestStoragePermissions();
+      if (!hasPermission) {
+        throw Exception('无法获取存储权限');
       }
       
       // 获取下载目录
@@ -149,6 +195,25 @@ class UpdateService {
     }
   }
   
+  /// 请求安装权限
+  Future<bool> _requestInstallPermissions() async {
+    if (!Platform.isAndroid) return true;
+    
+    try {
+      final status = await Permission.requestInstallPackages.request();
+      if (status.isGranted) {
+        return true;
+      } else if (status.isPermanentlyDenied) {
+        throw Exception('安装权限被永久拒绝，请前往设置手动开启应用安装权限');
+      } else {
+        throw Exception('需要安装权限才能自动安装更新，您也可以手动安装下载的APK文件');
+      }
+    } catch (e) {
+      debugPrint('请求安装权限失败: $e');
+      rethrow;
+    }
+  }
+  
   /// 安装APK（仅Android）
   Future<bool> installApk(String filePath) async {
     try {
@@ -158,22 +223,27 @@ class UpdateService {
       
       final file = File(filePath);
       if (!await file.exists()) {
-        throw Exception('APK文件不存在');
+        throw Exception('APK文件不存在: $filePath');
       }
       
       // 请求安装权限
-      if (Platform.isAndroid) {
-        final status = await Permission.requestInstallPackages.request();
-        if (!status.isGranted) {
-          throw Exception('需要安装权限才能安装更新');
-        }
+      final hasPermission = await _requestInstallPermissions();
+      if (!hasPermission) {
+        throw Exception('无法获取安装权限');
       }
       
       // 使用平台通道安装APK
-      // 这里需要实现原生Android代码来处理安装
-      // 暂时返回true，表示安装请求已发送
-      debugPrint('安装APK: $filePath');
-      return true;
+      debugPrint('准备安装APK: $filePath');
+      
+      try {
+        final result = await _channel.invokeMethod('installApk', {
+          'apkFilePath': filePath,
+        });
+        return result as bool? ?? false;
+      } on PlatformException catch (e) {
+        debugPrint('调用原生安装方法失败: ${e.message}');
+        return false;
+      }
       
     } catch (e) {
       debugPrint('安装APK失败: $e');
