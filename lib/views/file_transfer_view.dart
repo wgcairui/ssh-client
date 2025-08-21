@@ -53,13 +53,36 @@ class _FileTransferViewState extends State<FileTransferView> {
         final session = sessionController.sessions[widget.sessionId];
         
         if (session != null && session.client != null && session.status == SshConnectionStatus.authenticated) {
-          success = await _controller.connectWithExistingClient(session.client!, widget.connection);
+          try {
+            success = await _controller.connectWithExistingClient(session.client!, widget.connection);
+            if (success) {
+              debugPrint('文件传输：成功复用现有SSH连接');
+            } else {
+              debugPrint('文件传输：复用现有SSH连接失败，将创建新连接');
+            }
+          } catch (e) {
+            debugPrint('文件传输：复用连接时出错: $e');
+            success = false;
+          }
+        } else {
+          debugPrint('文件传输：没有可用的现有连接，session状态: ${session?.status}');
         }
       }
       
       // 如果复用失败，创建新连接
       if (!success) {
-        success = await _controller.connect(widget.connection);
+        try {
+          debugPrint('文件传输：开始创建新的SSH连接');
+          success = await _controller.connect(widget.connection);
+          if (success) {
+            debugPrint('文件传输：新SSH连接创建成功');
+          } else {
+            debugPrint('文件传输：新SSH连接创建失败');
+          }
+        } catch (e) {
+          debugPrint('文件传输：创建新连接时出错: $e');
+          success = false;
+        }
       }
       
       if (success) {

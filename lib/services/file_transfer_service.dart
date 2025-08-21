@@ -55,6 +55,7 @@ class FileTransferService {
   SSHClient? _client;
   SftpClient? _sftp;
   bool _isConnected = false;
+  bool _isSharedClient = false; // 标记是否使用共享的客户端
   
   /// 使用现有SSH客户端创建SFTP连接
   Future<bool> connectWithExistingClient(SSHClient client) async {
@@ -62,9 +63,11 @@ class FileTransferService {
       _client = client;
       _sftp = await _client!.sftp();
       _isConnected = true;
+      _isSharedClient = true; // 标记为共享客户端
       return true;
     } catch (e) {
       _isConnected = false;
+      _isSharedClient = false;
       return false;
     }
   }
@@ -90,9 +93,11 @@ class FileTransferService {
       
       _sftp = await _client!.sftp();
       _isConnected = true;
+      _isSharedClient = false; // 这是我们自己创建的连接
       return true;
     } catch (e) {
       _isConnected = false;
+      _isSharedClient = false;
       return false;
     }
   }
@@ -100,14 +105,31 @@ class FileTransferService {
   /// 断开连接
   Future<void> disconnect() async {
     _sftp?.close();
-    _client?.close();
+    
+    // 只有当客户端是我们自己创建的时候才关闭它
+    if (!_isSharedClient) {
+      _client?.close();
+    }
+    
     _sftp = null;
     _client = null;
     _isConnected = false;
+    _isSharedClient = false;
   }
   
   /// 检查是否已连接
-  bool get isConnected => _isConnected && _sftp != null;
+  bool get isConnected {
+    if (!_isConnected || _sftp == null || _client == null) {
+      return false;
+    }
+    
+    // 对于共享客户端，也检查客户端是否仍然活跃
+    try {
+      return _client!.isClosed == false;
+    } catch (e) {
+      return false;
+    }
+  }
   
   /// 获取远程用户主目录路径
   Future<String> getRemoteHomeDirectory() async {
@@ -141,8 +163,16 @@ class FileTransferService {
     if (!isConnected) throw Exception('未连接到服务器');
     
     try {
+      // 在进行操作前再次检查连接状态
+      if (_client!.isClosed) {
+        throw Exception('SSH连接已关闭');
+      }
       return await _sftp!.listdir(path);
     } catch (e) {
+      // 如果是连接问题，重置连接状态
+      if (e.toString().contains('Transport is closed') || e.toString().contains('connection closed')) {
+        _isConnected = false;
+      }
       throw Exception('列出目录失败: $e');
     }
   }
@@ -179,6 +209,19 @@ class FileTransferService {
     }
     
     try {
+      // 在开始传输前检查连接状态
+      if (_client!.isClosed) {
+        yield FileTransferProgress(
+          bytesTransferred: 0,
+          totalBytes: 0,
+          progress: 0.0,
+          fileName: File(localFilePath).path.split('/').last,
+          status: FileTransferStatus.failed,
+          error: 'SSH连接已关闭',
+        );
+        return;
+      }
+      
       final fileSize = await localFile.length();
       final fileName = localFile.path.split('/').last;
       
@@ -249,6 +292,11 @@ class FileTransferService {
       );
       
     } catch (e) {
+      // 如果是连接问题，重置连接状态
+      if (e.toString().contains('Transport is closed') || e.toString().contains('connection closed')) {
+        _isConnected = false;
+      }
+      
       yield FileTransferProgress(
         bytesTransferred: 0,
         totalBytes: 0,
@@ -369,6 +417,11 @@ class FileTransferService {
       );
       
     } catch (e) {
+      // 如果是连接问题，重置连接状态
+      if (e.toString().contains('Transport is closed') || e.toString().contains('connection closed')) {
+        _isConnected = false;
+      }
+      
       yield FileTransferProgress(
         bytesTransferred: 0,
         totalBytes: 0,
