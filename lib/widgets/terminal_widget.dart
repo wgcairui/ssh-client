@@ -7,6 +7,7 @@ import '../controllers/ssh_controller.dart';
 import '../controllers/ssh_session_controller.dart';
 import '../models/ssh_connection.dart';
 import '../services/ssh_service.dart';
+import '../views/file_transfer_view.dart';
 
 /// 终端组件 - 完整实现
 class TerminalWidget extends StatefulWidget {
@@ -174,6 +175,17 @@ class _TerminalWidgetState extends State<TerminalWidget> {
     }
   }
 
+  /// 打开文件传输页面
+  void _openFileTransfer() {
+    if (_connection != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => FileTransferView(connection: _connection!),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -243,6 +255,15 @@ class _TerminalWidgetState extends State<TerminalWidget> {
           ),
           // 操作按钮
           if (service != null) ...[
+            if (service.isConnected)
+              IconButton(
+                onPressed: _openFileTransfer,
+                icon: Icon(
+                  Icons.folder_open,
+                  size: 18.sp,
+                ),
+                tooltip: '文件传输',
+              ),
             IconButton(
               onPressed: service.isConnected ? _disconnect : _reconnect,
               icon: Icon(

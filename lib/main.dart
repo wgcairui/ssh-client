@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'controllers/ssh_controller.dart';
 import 'controllers/ssh_session_controller.dart';
+import 'controllers/file_transfer_controller.dart';
 import 'views/home_view.dart';
 
 void main() async {
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
           providers: [
             ChangeNotifierProvider(create: (context) => SshController()),
             ChangeNotifierProvider(create: (context) => SshSessionController()),
+            ChangeNotifierProvider(create: (context) => FileTransferController()),
           ],
           child: MaterialApp(
             title: 'SSH 客户端',
