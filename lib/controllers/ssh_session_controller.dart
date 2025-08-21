@@ -89,6 +89,14 @@ class SshSessionController extends ChangeNotifier {
     }
   }
 
+  /// 发送命令到指定会话
+  Future<void> writeToSession(String sessionId, String input) async {
+    final session = _sessions[sessionId];
+    if (session != null) {
+      await session.write(input);
+    }
+  }
+
   /// 调整活动会话终端大小
   Future<void> resizeActiveSession(int width, int height) async {
     if (activeSession != null) {

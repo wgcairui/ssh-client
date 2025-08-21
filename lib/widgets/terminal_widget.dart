@@ -46,6 +46,22 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   @override
   void didUpdateWidget(TerminalWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    
+    // 如果活跃状态发生变化，管理焦点
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive) {
+        // 激活当前终端
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _focusNode.requestFocus();
+          }
+        });
+      } else {
+        // 停用当前终端
+        _focusNode.unfocus();
+      }
+    }
+    
     // 如果连接ID发生变化，重新初始化连接
     if (oldWidget.connectionId != widget.connectionId) {
       _cleanupSubscriptions();
@@ -66,6 +82,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   @override
   void dispose() {
     _cleanupSubscriptions();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -431,10 +448,19 @@ class _TerminalWidgetState extends State<TerminalWidget> {
 
   /// 构建终端
   Widget _buildTerminal() {
-    return Container(
-      color: Colors.black,
-      child: TerminalView(
-        _terminal!,
+    return GestureDetector(
+      onTap: () {
+        if (widget.isActive) {
+          _focusNode.requestFocus();
+        }
+      },
+      child: Container(
+        color: Colors.black,
+        child: TerminalView(
+          _terminal!,
+          focusNode: _focusNode,
+          autofocus: widget.isActive,
+        ),
       ),
     );
   }

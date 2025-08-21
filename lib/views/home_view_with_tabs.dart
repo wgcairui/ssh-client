@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../controllers/ssh_controller.dart';
 import '../controllers/ssh_tab_controller.dart';
 import '../widgets/connection_list_widget.dart';
-import '../widgets/terminal_widget.dart';
 import '../widgets/ssh_tab_bar.dart';
+import '../widgets/single_terminal_manager.dart';
 import 'add_connection_view.dart';
 
 /// 支持多标签页的主界面
@@ -134,20 +134,20 @@ class _HomeViewWithTabsState extends State<HomeViewWithTabs> {
             // 终端内容
             Expanded(
               child: tabController.tabs.isNotEmpty
-                  ? IndexedStack(
-                      index: tabController.activeTabIndex,
-                      children: tabController.tabs.map((tab) {
-                        return TerminalWidget(
-                          connectionId: tab.connectionId,
-                          key: ValueKey(tab.id),
-                        );
-                      }).toList(),
-                    )
+                  ? _buildSingleTerminalManager(tabController)
                   : _buildWelcomePanel(),
             ),
           ],
         );
       },
+    );
+  }
+
+  /// 构建单终端管理器
+  Widget _buildSingleTerminalManager(SshTabController tabController) {
+    return SingleTerminalManager(
+      tabs: tabController.tabs,
+      activeTabIndex: tabController.activeTabIndex,
     );
   }
 
