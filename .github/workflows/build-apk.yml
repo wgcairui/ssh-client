@@ -4,7 +4,7 @@ name: Build Android APK
 # Features:
 # - ✅ Multi-level caching for faster builds
 # - ✅ Pub dependencies cache
-# - ✅ Gradle wrapper and dependencies cache  
+# - ✅ Gradle wrapper and dependencies cache
 # - ✅ Android build cache
 # - ✅ Code obfuscation for release builds
 # - ✅ Split APKs by architecture for smaller downloads
@@ -12,9 +12,11 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    tags:
+      - "v*" # 触发正式版本发布
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 # 取消旧的运行中的工作流
@@ -24,338 +26,338 @@ concurrency:
 
 # 权限设置
 permissions:
-  contents: write  # 创建releases需要写入权限
+  contents: write # 创建releases需要写入权限
   actions: read
   checks: read
 
 # Global environment variables for consistency
 env:
-  FLUTTER_VERSION: '3.27.1'
-  JAVA_VERSION: '17'
+  FLUTTER_VERSION: "3.27.1"
+  JAVA_VERSION: "17"
   GRADLE_OPTS: -Dorg.gradle.daemon=false
   GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup Java ${{ env.JAVA_VERSION }}
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: ${{ env.JAVA_VERSION }}
-        
-    - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: ${{ env.FLUTTER_VERSION }}
-        channel: 'stable'
-        cache: true
-        
-    # Cache Pub dependencies
-    - name: Cache Pub dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.pub-cache
-          **/.dart_tool
-          **/.packages
-        key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pub-
-          
-    # Cache Gradle dependencies
-    - name: Cache Gradle Wrapper
-      uses: actions/cache@v4
-      with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-wrapper-
 
-    - name: Cache Gradle Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/buildOutputCleanup
-        key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/gradle.properties', '**/gradle/wrapper/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-caches-
-          
-    # Cache Android build outputs
-    - name: Cache Android Build
-      uses: actions/cache@v4
-      with:
-        path: |
-          android/app/build
-          android/build
-          android/.gradle
-        key: ${{ runner.os }}-android-build-${{ hashFiles('android/**/*.gradle', 'android/**/gradle.properties', 'pubspec.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-android-build-
-        
-    - name: Get dependencies
-      run: flutter pub get
-      
-    - name: Analyze code
-      run: flutter analyze
-      
-    - name: Run tests
-      run: flutter test
-      
-    - name: Build APK (Debug)
-      run: |
-        flutter build apk --debug \
-          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
-          --no-tree-shake-icons
-      
-    - name: Build APK (Release - Universal)
-      run: |
-        flutter build apk --release \
-          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
-          --obfuscate \
-          --split-debug-info=build/app/outputs/symbols
-          
-    - name: Build APK (Release - Split by ABI)
-      run: |
-        flutter build apk --release \
-          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
-          --split-per-abi \
-          --obfuscate \
-          --split-debug-info=build/app/outputs/symbols-split
-      
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: ssh-client-debug-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
-        retention-days: 30
-        
-    - name: Upload Release APK (Universal)
-      uses: actions/upload-artifact@v4
-      with:
-        name: ssh-client-release-apk-universal
-        path: build/app/outputs/flutter-apk/app-release.apk
-        retention-days: 90
-        
-    - name: Upload Release APKs (Split)
-      uses: actions/upload-artifact@v4
-      with:
-        name: ssh-client-release-apks-split
-        path: build/app/outputs/flutter-apk/app-*-release.apk
-        retention-days: 90
-        
-    - name: Upload Debug Symbols
-      uses: actions/upload-artifact@v4
-      with:
-        name: ssh-client-debug-symbols
-        path: |
-          build/app/outputs/symbols/
-          build/app/outputs/symbols-split/
-        retention-days: 90
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      # Cache Pub dependencies
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            **/.dart_tool
+            **/.packages
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/buildOutputCleanup
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/gradle.properties', '**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
+
+      # Cache Android build outputs
+      - name: Cache Android Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            android/app/build
+            android/build
+            android/.gradle
+          key: ${{ runner.os }}-android-build-${{ hashFiles('android/**/*.gradle', 'android/**/gradle.properties', 'pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-android-build-
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build APK (Debug)
+        run: |
+          flutter build apk --debug \
+            --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+            --no-tree-shake-icons
+
+      - name: Build APK (Release - Universal)
+        run: |
+          flutter build apk --release \
+            --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols
+
+      - name: Build APK (Release - Split by ABI)
+        run: |
+          flutter build apk --release \
+            --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+            --split-per-abi \
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols-split
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssh-client-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
+
+      - name: Upload Release APK (Universal)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssh-client-release-apk-universal
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 90
+
+      - name: Upload Release APKs (Split)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssh-client-release-apks-split
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+          retention-days: 90
+
+      - name: Upload Debug Symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssh-client-debug-symbols
+          path: |
+            build/app/outputs/symbols/
+            build/app/outputs/symbols-split/
+          retention-days: 90
 
   # Create development release for main branch pushes
   dev-release:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && contains(github.event.head_commit.message, 'feat:')
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Download Release APK
-      uses: actions/download-artifact@v4
-      with:
-        name: ssh-client-release-apk-universal
-        path: ./release-apk
-        
-    - name: Download Split APKs
-      uses: actions/download-artifact@v4
-      with:
-        name: ssh-client-release-apks-split
-        path: ./split-apks
-        
-    - name: Get current date
-      id: date
-      run: echo "date=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
-      
-    - name: Get short commit SHA
-      id: sha
-      run: echo "sha=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_OUTPUT
-      
-    - name: Create Development Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: dev-${{ steps.date.outputs.date }}-${{ steps.sha.outputs.sha }}
-        name: SSH客户端开发版 ${{ steps.date.outputs.date }}
-        body: |
-          ## 🚀 SSH客户端开发版
-          
-          **构建时间**: ${{ steps.date.outputs.date }}
-          **提交**: ${{ steps.sha.outputs.sha }}
-          **分支**: main
-          
-          ### 📱 下载说明
-          - **app-release.apk**: 通用版本，支持所有架构
-          - **app-arm64-v8a-release.apk**: ARM64架构优化版本（推荐现代设备）
-          - **app-armeabi-v7a-release.apk**: ARM32架构版本（兼容老设备）
-          - **app-x86_64-release.apk**: x86_64架构版本（模拟器和x86设备）
-          
-          ### ✨ 新功能
-          - 多标签页支持：同时管理最多10个SSH连接
-          - 智能焦点管理：优化的键盘输入处理
-          - 会话保持机制：SSH连接在后台保持活跃
-          
-          ### 🔧 系统要求
-          - Android 5.0 (API 21) 或更高版本
-          - 推荐在平板设备上使用以获得最佳体验
-          
-          ---
-          
-          > ⚠️ 这是开发版本，仅用于测试。正式版本请查看带有版本号的Release。
-        files: |
-          ./release-apk/app-release.apk
-          ./split-apks/app-*-release.apk
-        draft: false
-        prerelease: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ssh-client-release-apk-universal
+          path: ./release-apk
+
+      - name: Download Split APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: ssh-client-release-apks-split
+          path: ./split-apks
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Get short commit SHA
+        id: sha
+        run: echo "sha=$(echo $GITHUB_SHA | cut -c1-8)" >> $GITHUB_OUTPUT
+
+      - name: Create Development Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: dev-${{ steps.date.outputs.date }}-${{ steps.sha.outputs.sha }}
+          name: SSH客户端开发版 ${{ steps.date.outputs.date }}
+          body: |
+            ## 🚀 SSH客户端开发版
+
+            **构建时间**: ${{ steps.date.outputs.date }}
+            **提交**: ${{ steps.sha.outputs.sha }}
+            **分支**: main
+
+            ### 📱 下载说明
+            - **app-release.apk**: 通用版本，支持所有架构
+            - **app-arm64-v8a-release.apk**: ARM64架构优化版本（推荐现代设备）
+            - **app-armeabi-v7a-release.apk**: ARM32架构版本（兼容老设备）
+            - **app-x86_64-release.apk**: x86_64架构版本（模拟器和x86设备）
+
+            ### ✨ 新功能
+            - 多标签页支持：同时管理最多10个SSH连接
+            - 智能焦点管理：优化的键盘输入处理
+            - 会话保持机制：SSH连接在后台保持活跃
+
+            ### 🔧 系统要求
+            - Android 5.0 (API 21) 或更高版本
+            - 推荐在平板设备上使用以获得最佳体验
+
+            ---
+
+            > ⚠️ 这是开发版本，仅用于测试。正式版本请查看带有版本号的Release。
+          files: |
+            ./release-apk/app-release.apk
+            ./split-apks/app-*-release.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Create official release when pushing version tags
   official-release:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup Java ${{ env.JAVA_VERSION }}
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: ${{ env.JAVA_VERSION }}
-        
-    - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: ${{ env.FLUTTER_VERSION }}
-        channel: 'stable'
-        cache: true
-        
-    # Cache Pub dependencies
-    - name: Cache Pub dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.pub-cache
-          **/.dart_tool
-          **/.packages
-        key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pub-
-          
-    # Cache Gradle dependencies
-    - name: Cache Gradle Wrapper
-      uses: actions/cache@v4
-      with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-wrapper-
 
-    - name: Cache Gradle Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/buildOutputCleanup
-        key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/gradle.properties', '**/gradle/wrapper/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-caches-
-          
-    # Cache Android build outputs
-    - name: Cache Android Build
-      uses: actions/cache@v4
-      with:
-        path: |
-          android/app/build
-          android/build
-          android/.gradle
-        key: ${{ runner.os }}-android-build-${{ hashFiles('android/**/*.gradle', 'android/**/gradle.properties', 'pubspec.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-android-build-
-        
-    - name: Get dependencies
-      run: flutter pub get
-      
-    - name: Analyze code
-      run: flutter analyze
-      
-    - name: Run tests
-      run: flutter test
-      
-    - name: Build APK (Release - Universal)
-      run: |
-        flutter build apk --release \
-          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
-          --obfuscate \
-          --split-debug-info=build/app/outputs/symbols
-          
-    - name: Build APK (Release - Split by ABI)
-      run: |
-        flutter build apk --release \
-          --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
-          --split-per-abi \
-          --obfuscate \
-          --split-debug-info=build/app/outputs/symbols-split
-      
-    - name: Get tag name
-      id: tag
-      run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
-    - name: Create Official Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.tag.outputs.tag }}
-        name: SSH客户端 ${{ steps.tag.outputs.tag }}
-        body: |
-          ## 🎉 SSH客户端正式版 ${{ steps.tag.outputs.tag }}
-          
-          ### ✨ 核心功能
-          - 🔐 **多重认证**: 支持密码和SSH密钥认证
-          - 📁 **文件传输**: 完整的SFTP文件传输功能
-          - 📱 **平板优化**: 专为平板设备设计的分屏界面
-          - 🏷️ **多标签页**: 同时管理最多10个SSH连接
-          - 🎯 **智能焦点**: 优化的键盘输入处理
-          - ⚡ **会话保持**: SSH连接在后台保持活跃
-          - 🌗 **主题支持**: 明暗主题自动切换
-          - 📋 **历史记录**: 连接历史和快速重连
-          
-          ### 📱 下载选择
-          - **app-release.apk**: 通用版本，支持所有设备 **(推荐)**
-          - **app-arm64-v8a-release.apk**: ARM64优化版本（现代Android设备）
-          - **app-armeabi-v7a-release.apk**: ARM32版本（兼容老设备）
-          - **app-x86_64-release.apk**: x86_64版本（模拟器和特殊设备）
-          
-          ### 🔧 系统要求
-          - **最低版本**: Android 5.0 (API 21)
-          - **推荐配置**: Android 8.0+ 的平板设备
-          - **屏幕尺寸**: 7英寸以上平板获得最佳体验
-          
-          ### 🆕 本版本更新
-          查看 [CHANGELOG.md](https://github.com/cairui/ssh-client/blob/main/CHANGELOG.md) 了解详细更新内容。
-          
-          ### 🐛 问题报告
-          如遇问题请访问 [Issues页面](https://github.com/cairui/ssh-client/issues) 反馈。
-          
-        files: |
-          build/app/outputs/flutter-apk/app-release.apk
-          build/app/outputs/flutter-apk/app-*-release.apk
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      # Cache Pub dependencies
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            **/.dart_tool
+            **/.packages
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      # Cache Gradle dependencies
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/buildOutputCleanup
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/gradle.properties', '**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
+
+      # Cache Android build outputs
+      - name: Cache Android Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            android/app/build
+            android/build
+            android/.gradle
+          key: ${{ runner.os }}-android-build-${{ hashFiles('android/**/*.gradle', 'android/**/gradle.properties', 'pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-android-build-
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build APK (Release - Universal)
+        run: |
+          flutter build apk --release \
+            --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols
+
+      - name: Build APK (Release - Split by ABI)
+        run: |
+          flutter build apk --release \
+            --dart-define=FLUTTER_WEB_AUTO_DETECT=true \
+            --split-per-abi \
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols-split
+
+      - name: Get tag name
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Official Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: SSH客户端 ${{ steps.tag.outputs.tag }}
+          body: |
+            ## 🎉 SSH客户端正式版 ${{ steps.tag.outputs.tag }}
+
+            ### ✨ 核心功能
+            - 🔐 **多重认证**: 支持密码和SSH密钥认证
+            - 📁 **文件传输**: 完整的SFTP文件传输功能
+            - 📱 **平板优化**: 专为平板设备设计的分屏界面
+            - 🏷️ **多标签页**: 同时管理最多10个SSH连接
+            - 🎯 **智能焦点**: 优化的键盘输入处理
+            - ⚡ **会话保持**: SSH连接在后台保持活跃
+            - 🌗 **主题支持**: 明暗主题自动切换
+            - 📋 **历史记录**: 连接历史和快速重连
+
+            ### 📱 下载选择
+            - **app-release.apk**: 通用版本，支持所有设备 **(推荐)**
+            - **app-arm64-v8a-release.apk**: ARM64优化版本（现代Android设备）
+            - **app-armeabi-v7a-release.apk**: ARM32版本（兼容老设备）
+            - **app-x86_64-release.apk**: x86_64版本（模拟器和特殊设备）
+
+            ### 🔧 系统要求
+            - **最低版本**: Android 5.0 (API 21)
+            - **推荐配置**: Android 8.0+ 的平板设备
+            - **屏幕尺寸**: 7英寸以上平板获得最佳体验
+
+            ### 🆕 本版本更新
+            查看 [CHANGELOG.md](https://github.com/cairui/ssh-client/blob/main/CHANGELOG.md) 了解详细更新内容。
+
+            ### 🐛 问题报告
+            如遇问题请访问 [Issues页面](https://github.com/cairui/ssh-client/issues) 反馈。
+
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-*-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
