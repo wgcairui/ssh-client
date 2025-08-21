@@ -22,6 +22,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 权限设置
+permissions:
+  contents: write  # 创建releases需要写入权限
+  actions: read
+  checks: read
+
 # Global environment variables for consistency
 env:
   FLUTTER_VERSION: '3.27.1'
