@@ -183,7 +183,6 @@ class FileTransferService {
       );
       
       int bytesTransferred = 0;
-      const chunkSize = 32768; // 32KB chunks
       
       await for (final chunk in localFile.openRead()) {
         await remoteFile.write(Stream.value(Uint8List.fromList(chunk)));

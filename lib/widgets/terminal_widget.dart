@@ -83,6 +83,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   /// 连接到 SSH
   Future<void> _connectToSsh(SshConnection connection) async {
     final sessionController = context.read<SshSessionController>();
+    final sshController = context.read<SshController>();
     
     try {
       final sessionId = await sessionController.createSession(connection);
@@ -94,7 +95,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
         });
 
         // 更新最后使用时间
-        context.read<SshController>().updateLastUsedTime(connection.id);
+        sshController.updateLastUsedTime(connection.id);
         
         // 订阅输出和状态
         _subscribeToSession(sessionController.sessions[sessionId]!);

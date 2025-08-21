@@ -199,10 +199,14 @@ class _ConnectionListWidgetState extends State<ConnectionListWidget> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              final success = await context.read<SshController>().deleteConnection(connection.id);
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final controller = context.read<SshController>();
+              
+              navigator.pop();
+              final success = await controller.deleteConnection(connection.id);
               if (mounted && success) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   const SnackBar(content: Text('连接已删除')),
                 );
                 // 如果删除的是当前选中的连接，清空选择

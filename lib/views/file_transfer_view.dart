@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dartssh2/dartssh2.dart';
-import 'dart:io';
 import '../controllers/file_transfer_controller.dart';
 import '../models/ssh_connection.dart';
 import '../services/file_transfer_service.dart';
@@ -570,6 +569,9 @@ class _FileTransferViewState extends State<FileTransferView> {
             onPressed: () async {
               final newName = controller.text.trim();
               if (newName.isNotEmpty && newName != file.filename) {
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
+                
                 final oldPath = _currentRemotePath.endsWith('/') 
                   ? '$_currentRemotePath${file.filename}'
                   : '$_currentRemotePath/${file.filename}';
@@ -580,14 +582,14 @@ class _FileTransferViewState extends State<FileTransferView> {
                 final success = await _controller.renameRemoteFile(oldPath, newPath);
                 
                 if (mounted) {
-                  Navigator.pop(context);
+                  navigator.pop();
                   if (success) {
                     _loadRemoteFiles();
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(content: Text('重命名成功')),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       const SnackBar(content: Text('重命名失败')),
                     );
                   }
@@ -614,6 +616,9 @@ class _FileTransferViewState extends State<FileTransferView> {
           ),
           TextButton(
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              
               final filePath = _currentRemotePath.endsWith('/') 
                 ? '$_currentRemotePath${file.filename}'
                 : '$_currentRemotePath/${file.filename}';
@@ -621,14 +626,14 @@ class _FileTransferViewState extends State<FileTransferView> {
               final success = await _controller.deleteRemoteFile(filePath);
               
               if (mounted) {
-                Navigator.pop(context);
+                navigator.pop();
                 if (success) {
                   _loadRemoteFiles();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('删除成功')),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('删除失败')),
                   );
                 }
